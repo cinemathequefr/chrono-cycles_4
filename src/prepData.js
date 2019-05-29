@@ -28,25 +28,22 @@ function prepData(data, curDate, idPinned, options) {
       moment(b.dateTo).startOf("day").isBefore(curDate, "days") ||
       pubDate(moment(b.dateFrom).startOf("day")).isAfter(curDate, "days")
     )
-    .map(b => {
-      return _({}).assign(b, {
-          id: b.idCycle,
-          dateFrom: moment(b.dateFrom).startOf("day"),
-          dateTo: moment(b.dateTo).startOf("day"),
-          startsIn: moment(b.dateFrom).startOf("day").diff(curDate, "days"),
-        })
-        .value();
-    })
-    .map(b => {
-      return _({}).assign(b, {
-        progress: (() => {
-          if (b.dateTo === null) return 0;
-          let p = (b.dateFrom.diff(curDate, "days") / b.dateFrom.diff(b.dateTo, "days")) * 100;
-          return p >= 0 ? p : 0;
-        })()
-
+    // Propriétés calculées (TODO: convertir en amont les dates en objets moment)
+    .map(a => _(a).thru(b => {
+      let dateFrom = moment(b.dateFrom).startOf("day");
+      let dateTo = moment(b.dateTo).startOf("day");
+      let startsIn = moment(b.dateFrom).startOf("day").diff(curDate, "days");
+      let progress = dateTo === null ? 0 : Math.round((dateFrom.diff(curDate, "days") / dateFrom.diff(dateTo, "days")) * 100, 1);
+      let progressPositive = progress > 0 ? progress : 0;
+      return _({}).assign(a, {
+        id: b.idCycle,
+        dateFrom: dateFrom,
+        dateTo: dateTo,
+        startsIn: startsIn,
+        progress: progress,
+        progressPositive: progressPositive
       }).value();
-    })
+    }).value())
     .value();
 
   console.log(options.lookAheadPonc);
@@ -58,14 +55,22 @@ function prepData(data, curDate, idPinned, options) {
     b.id === parseInt(idPinned, 10) // On conserve un cycle épinglé
   ).value();
 
+  // TEST: tri par valeur absolue de la progression
+  dataPonc2 = _(dataPonc2).orderBy(
+    b => Math.abs(b.progress)
+  ).value();
+
+
+  // Tri des cycles ponctuels (hypothèse 1)
   // On intervertit l'ordre des cycles à venir (startsIn >= 0)  
-  dataPonc2 = _(dataPonc2).partition(b => b.startsIn >= 0)
-    .map(b => _(b).sortBy(c => c.dateFrom).value())
-    .thru(b => _.concat(
-      b[0], _.reverse(b[1])
-    ))
-    // .flatten()
-    .value();
+  // dataPonc2 = _(dataPonc2).partition(b => b.startsIn >= 0)
+  //   .map(b => _(b).sortBy(c => c.dateFrom).value())
+  //   .thru(b => _.concat(
+  //     b[0], _.reverse(b[1])
+  //   ))
+  //   .value();
+
+
 
 
 
@@ -170,7 +175,7 @@ function prepData(data, curDate, idPinned, options) {
   let pinned = dataPonc2[1][0] || dataReg2[1][0];
   let ponc = dataPonc2[0];
   let reg = dataReg2[0];
-  let hasPinned;
+  let isPinned;
 
   if (!pinned) {
     if (ponc.length > 0) {
@@ -178,14 +183,14 @@ function prepData(data, curDate, idPinned, options) {
     } else if (reg.length > 0) {
       pinned = reg.shift();
     }
-    hasPinned = false;
+    isPinned = false;
   } else {
-    hasPinned = true;
+    isPinned = true;
   }
 
   return {
     pinned: pinned,
-    hasPinned: hasPinned,
+    isPinned: isPinned,
     ponc: ponc,
     reg: reg
   };
@@ -219,8 +224,6 @@ function pubDate(date) {
     .date(20)
     .startOf("day");
 }
-
-
 
 export {
   pubDate,

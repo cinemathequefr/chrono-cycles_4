@@ -99,23 +99,24 @@
     margin-bottom: 48px;
   }
 
+  /*
   #datepicker:hover {
     background-color: #eee;
     cursor: ns-resize;
   }
+*/
 </style>
 
-<header>
-  <label
-    id="datepicker"
-    on:DOMMouseScroll={e => {
-      changeDate(e.deltaY);
-      e.preventDefault();
-    }}
-    on:wheel={e => {
-      changeDate(e.deltaY);
-      e.preventDefault();
-    }}>
+<header
+  on:DOMMouseScroll={e => {
+    changeDate(e.deltaY);
+    e.preventDefault();
+  }}
+  on:wheel={e => {
+    changeDate(e.deltaY);
+    e.preventDefault();
+  }}>
+  <label id="datepicker">
     Date
     <input type="date" bind:value={curDate} />
     (

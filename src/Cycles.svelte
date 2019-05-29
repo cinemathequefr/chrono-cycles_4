@@ -3,6 +3,7 @@
   import { prepData } from "./prepData.js";
   import { concatDates, formatDate } from "./utils.js";
   export let curDateValid, lookAheadReg, lookAheadPonc, showData;
+  import _ from "lodash";
 
   let data = [];
   let idPinned = null;
@@ -21,6 +22,11 @@
     let dataReg = await (await fetch(
       "https://gist.githubusercontent.com/nltesown/a310518cfa88cd52b13a55f3e737d75f/raw/cycles-ext-2.json"
     )).json();
+
+    // NOTICE: je retire manuellement l'item Fellini/Picasso (= exposition)
+    dataPonc = _(dataPonc)
+      .filter(b => b.idCycle !== 442)
+      .value();
 
     data = [dataPonc, dataReg];
     console.log("Cycles mounted");
@@ -154,9 +160,17 @@
     left: 0;
     bottom: 0;
     width: 0;
-    height: 24px;
+    height: 8px;
     background-color: #000;
     opacity: 0.25;
+  }
+
+  .info {
+    position: absolute;
+    bottom: 6px;
+    left: 4px;
+    font-size: 1em;
+    /* font-weight: 300; */
   }
 
   .soon {
@@ -169,8 +183,9 @@
     height: 65px;
     line-height: 65px;
     text-align: center;
-    opacity: 0.65;
-    opacity: 0.65;
+    opacity: 0.75;
+    font-size: 0.938em;
+    text-transform: uppercase;
   }
 </style>
 
@@ -182,7 +197,7 @@
   <div class="cycles-container">
     <div class="zone-a">
       {#if dataDisplay.pinned}
-        {#if dataDisplay.hasPinned}
+        {#if dataDisplay.isPinned}
           <div
             class="pin pinned icon-pin"
             on:click={e => {
@@ -203,10 +218,21 @@
         {:else if dataDisplay.pinned.date}
           <div>{formatDate(dataDisplay.pinned.date, 'D MMM YYYY')}</div>
         {/if}
-        <div class="progress" style="width:{dataDisplay.pinned.progress}%;" />
-        {#if dataDisplay.pinned.startsIn >= 0}
-          <div class="soon">J-{dataDisplay.pinned.startsIn}</div>
+        <div
+          class="progress"
+          style="width:{dataDisplay.pinned.progressPositive}%;" />
+
+        <div class="info">
+           {dataDisplay.pinned.progress}% / J{`${dataDisplay.pinned.startsIn <= 0 ? '+' : ''}${-dataDisplay.pinned.startsIn}`}
+
+        </div>
+        {#if dataDisplay.pinned.startsIn > 0}
+          <div class="soon">À venir</div>
         {/if}
+
+        <!-- {#if dataDisplay.pinned.startsIn >= 0}
+          <div class="soon">J-{dataDisplay.pinned.startsIn}</div>
+        {/if} -->
       {/if}
     </div>
     <div class="zone-b" />
@@ -222,11 +248,19 @@
             }} />
           <div class="title">{cycle.title}</div>
           <div>{concatDates(cycle.dateFrom, cycle.dateTo)}</div>
-          <div class="progress" style="width:{cycle.progress}%;" />
+          <div class="progress" style="width:{cycle.progressPositive}%;" />
 
-          {#if cycle.startsIn >= 0}
-            <div class="soon">J-{cycle.startsIn}</div>
+          <div class="info">
+             {cycle.progress}% / J{`${cycle.startsIn <= 0 ? '+' : ''}${-cycle.startsIn}`}
+
+          </div>
+
+          {#if cycle.startsIn > 0}
+            <div class="soon">À venir</div>
           {/if}
+          <!-- {#if cycle.startsIn >= 0}
+            <div class="soon">J-{cycle.startsIn}</div>
+          {/if} -->
 
         </div>
       {/each}
@@ -250,8 +284,10 @@
           {:else if cycle.date}
             <div>{formatDate(cycle.date, 'D MMM YYYY')}</div>
           {/if}
+
           {#if cycle.startsIn >= 0}
-            <div class="soon">J-{cycle.startsIn}</div>
+            <div class="info">J-{cycle.startsIn} </div>
+            <!-- <div class="soon">J-{cycle.startsIn}</div> -->
           {/if}
         </div>
       {/each}
