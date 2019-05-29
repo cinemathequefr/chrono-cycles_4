@@ -22026,9 +22026,8 @@ var app = (function () {
 	function prepData(data, curDate, idPinned, options) {
 
 	  options = lodash({}).assign({
-	    lookAheadDays: 0,
-	    regOrderFixed: false,
-	    showEmptySurcycles: true,
+	    lookAheadPonc: 0,
+	    lookAheadReg: 0,
 	    surcycles: [
 	      "Aujourd'hui le cinéma",
 	      "Cinéma bis",
@@ -22051,49 +22050,49 @@ var app = (function () {
 	      moment(b.dateTo).startOf("day").isBefore(curDate, "days") ||
 	      pubDate(moment(b.dateFrom).startOf("day")).isAfter(curDate, "days")
 	    )
-	    .map(b => {
-	      return lodash({}).assign(b, {
-	          id: b.idCycle,
-	          dateFrom: moment(b.dateFrom).startOf("day"),
-	          dateTo: moment(b.dateTo).startOf("day"),
-	          startsIn: moment(b.dateFrom).startOf("day").diff(curDate, "days"),
-	        })
-	        .value();
-	    })
-	    .map(b => {
-	      return lodash({}).assign(b, {
-	        progress: (() => {
-	          if (b.dateTo === null) return 0;
-	          let p = (b.dateFrom.diff(curDate, "days") / b.dateFrom.diff(b.dateTo, "days")) * 100;
-	          return p >= 0 ? p : 0;
-	        })()
-
+	    // Propriétés calculées (TODO: convertir en amont les dates en objets moment)
+	    .map(a => lodash(a).thru(b => {
+	      let dateFrom = moment(b.dateFrom).startOf("day");
+	      let dateTo = moment(b.dateTo).startOf("day");
+	      let startsIn = moment(b.dateFrom).startOf("day").diff(curDate, "days");
+	      let progress = dateTo === null ? 0 : Math.round((dateFrom.diff(curDate, "days") / dateFrom.diff(dateTo, "days")) * 100, 1);
+	      let progressPositive = progress > 0 ? progress : 0;
+	      return lodash({}).assign(a, {
+	        id: b.idCycle,
+	        dateFrom: dateFrom,
+	        dateTo: dateTo,
+	        startsIn: startsIn,
+	        progress: progress,
+	        progressPositive: progressPositive
 	      }).value();
-	    })
-
-
-
-
-	    // .sortBy(d => d.dateFrom)
-	    // .reverse() // Premier tri
+	    }).value())
 	    .value();
 
+	  console.log(options.lookAheadPonc);
 
 	  let dataPonc2 = lodash(dataPonc1).filter(b =>
 	    moment(b.dateFrom)
 	    .startOf("day")
-	    .diff(curDate, "days") <= options.lookAheadDays ||
+	    .diff(curDate, "days") <= options.lookAheadPonc ||
 	    b.id === parseInt(idPinned, 10) // On conserve un cycle épinglé
 	  ).value();
 
+	  // TEST: tri par valeur absolue de la progression
+	  dataPonc2 = lodash(dataPonc2).orderBy(
+	    b => Math.abs(b.progress)
+	  ).value();
+
+
+	  // Tri des cycles ponctuels (hypothèse 1)
 	  // On intervertit l'ordre des cycles à venir (startsIn >= 0)  
-	  dataPonc2 = lodash(dataPonc2).partition(b => b.startsIn >= 0)
-	    .map(b => lodash(b).sortBy(c => c.dateFrom).value())
-	    .thru(b => lodash.concat(
-	      b[0], lodash.reverse(b[1])
-	    ))
-	    // .flatten()
-	    .value();
+	  // dataPonc2 = _(dataPonc2).partition(b => b.startsIn >= 0)
+	  //   .map(b => _(b).sortBy(c => c.dateFrom).value())
+	  //   .thru(b => _.concat(
+	  //     b[0], _.reverse(b[1])
+	  //   ))
+	  //   .value();
+
+
 
 
 
@@ -22143,7 +22142,7 @@ var app = (function () {
 	          i === 0 ||
 	          (moment(v.date)
 	            .startOf("day")
-	            .diff(curDate, "days") <= options.lookAheadDays) ||
+	            .diff(curDate, "days") <= options.lookAheadReg) ||
 	          v.id === parseInt(idPinned, 10) // On conserve un cycle épinglé
 	        ) {
 	          return lodash(acc).concat(v);
@@ -22155,12 +22154,10 @@ var app = (function () {
 	    )
 	    .value();
 
-	  // Rajoute les surcycles vides (si l'option est sélectionnée)
-	  if (options.showEmptySurcycles === true) {
-	    dataReg2 = lodash({})
-	      .assign(lodash.zipObject(options.surcycles, lodash.fill(new Array(options.surcycles.length), [])), dataReg2)
-	      .value();
-	  }
+	  // Rajoute les surcycles vides
+	  dataReg2 = lodash({})
+	    .assign(lodash.zipObject(options.surcycles, lodash.fill(new Array(options.surcycles.length), [])), dataReg2)
+	    .value();
 
 	  // Transforme l'objet en tableau d'objets et nettoye les données inutiles
 	  dataReg2 = lodash(dataReg2)
@@ -22190,11 +22187,7 @@ var app = (function () {
 	    })
 	    .map()
 	    .flatten()
-	    .orderBy(a =>
-	      !!options.regOrderFixed ?
-	      lodash.indexOf(options.surcycles, a.surcycle) :
-	      a.date
-	    )
+	    .orderBy(a => a.date)
 	    .value();
 
 	  // Isole les données du cycle épinglé dans les cycles ponctuels, puis réguliers
@@ -22204,7 +22197,7 @@ var app = (function () {
 	  let pinned = dataPonc2[1][0] || dataReg2[1][0];
 	  let ponc = dataPonc2[0];
 	  let reg = dataReg2[0];
-	  let hasPinned;
+	  let isPinned;
 
 	  if (!pinned) {
 	    if (ponc.length > 0) {
@@ -22212,16 +22205,16 @@ var app = (function () {
 	    } else if (reg.length > 0) {
 	      pinned = reg.shift();
 	    }
-	    hasPinned = false;
+	    isPinned = false;
 	  } else {
-	    hasPinned = true;
+	    isPinned = true;
 	  }
 
 	  return {
-	    ponc: ponc,
-	    reg: reg,
 	    pinned: pinned,
-	    hasPinned: hasPinned
+	    isPinned: isPinned,
+	    ponc: ponc,
+	    reg: reg
 	  };
 	}
 
@@ -22367,7 +22360,7 @@ var app = (function () {
 		return child_ctx;
 	}
 
-	// (186:0) {:else}
+	// (196:0) {:else}
 	function create_else_block(ctx) {
 		var div4, div0, t0, div1, t1, div2, t2, div3;
 
@@ -22409,16 +22402,16 @@ var app = (function () {
 				for (var i = 0; i < each_blocks.length; i += 1) {
 					each_blocks[i].c();
 				}
-				div0.className = "zone-a svelte-pzr0lp";
-				add_location(div0, file, 187, 4, 5246);
-				div1.className = "zone-b svelte-pzr0lp";
-				add_location(div1, file, 216, 4, 6306);
-				div2.className = "zone-c svelte-pzr0lp";
-				add_location(div2, file, 218, 4, 6336);
-				div3.className = "zone-c svelte-pzr0lp";
-				add_location(div3, file, 238, 4, 6955);
-				div4.className = "cycles-container svelte-pzr0lp";
-				add_location(div4, file, 186, 2, 5210);
+				div0.className = "zone-a svelte-1wwfbob";
+				add_location(div0, file, 197, 4, 5511);
+				div1.className = "zone-b svelte-1wwfbob";
+				add_location(div1, file, 237, 4, 6892);
+				div2.className = "zone-c svelte-1wwfbob";
+				add_location(div2, file, 239, 4, 6922);
+				div3.className = "zone-c svelte-1wwfbob";
+				add_location(div3, file, 267, 4, 7799);
+				div4.className = "cycles-container svelte-1wwfbob";
+				add_location(div4, file, 196, 2, 5475);
 			},
 
 			m: function mount(target, anchor) {
@@ -22513,7 +22506,7 @@ var app = (function () {
 		};
 	}
 
-	// (182:0) {#if showData}
+	// (192:0) {#if showData}
 	function create_if_block(ctx) {
 		var pre, code, t_value = JSON.stringify(ctx.dataDisplay, null, 2), t;
 
@@ -22522,8 +22515,8 @@ var app = (function () {
 				pre = element("pre");
 				code = element("code");
 				t = text(t_value);
-				add_location(code, file, 183, 4, 5136);
-				add_location(pre, file, 182, 2, 5125);
+				add_location(code, file, 193, 4, 5401);
+				add_location(pre, file, 192, 2, 5390);
 			},
 
 			m: function mount(target, anchor) {
@@ -22546,11 +22539,11 @@ var app = (function () {
 		};
 	}
 
-	// (189:6) {#if dataDisplay.pinned}
+	// (199:6) {#if dataDisplay.pinned}
 	function create_if_block_6(ctx) {
-		var t0, t1, t2, t3, div, t4, if_block4_anchor;
+		var t0, t1, t2, t3, div0, t4, div1, t5_value = ctx.dataDisplay.pinned.progress, t5, t6, t7_value = `${ctx.dataDisplay.pinned.startsIn <= 0 ? '+' : ''}${-ctx.dataDisplay.pinned.startsIn}`, t7, t8, if_block4_anchor;
 
-		var if_block0 = (ctx.dataDisplay.hasPinned) && create_if_block_12(ctx);
+		var if_block0 = (ctx.dataDisplay.isPinned) && create_if_block_12(ctx);
 
 		var if_block1 = (ctx.dataDisplay.pinned.surcycle) && create_if_block_11(ctx);
 
@@ -22564,7 +22557,7 @@ var app = (function () {
 		var current_block_type = select_block_type_1(ctx);
 		var if_block3 = current_block_type && current_block_type(ctx);
 
-		var if_block4 = (ctx.dataDisplay.pinned.startsIn >= 0) && create_if_block_7(ctx);
+		var if_block4 = (ctx.dataDisplay.pinned.startsIn > 0) && create_if_block_7(ctx);
 
 		return {
 			c: function create() {
@@ -22576,13 +22569,20 @@ var app = (function () {
 				t2 = space();
 				if (if_block3) if_block3.c();
 				t3 = space();
-				div = element("div");
+				div0 = element("div");
 				t4 = space();
+				div1 = element("div");
+				t5 = text(t5_value);
+				t6 = text("% / J");
+				t7 = text(t7_value);
+				t8 = space();
 				if (if_block4) if_block4.c();
 				if_block4_anchor = empty();
-				div.className = "progress svelte-pzr0lp";
-				set_style(div, "width", "" + ctx.dataDisplay.pinned.progress + "%");
-				add_location(div, file, 210, 8, 6075);
+				div0.className = "progress svelte-1wwfbob";
+				set_style(div0, "width", "" + ctx.dataDisplay.pinned.progressPositive + "%");
+				add_location(div0, file, 220, 8, 6339);
+				div1.className = "info svelte-1wwfbob";
+				add_location(div1, file, 224, 8, 6451);
 			},
 
 			m: function mount(target, anchor) {
@@ -22594,14 +22594,19 @@ var app = (function () {
 				insert(target, t2, anchor);
 				if (if_block3) if_block3.m(target, anchor);
 				insert(target, t3, anchor);
-				insert(target, div, anchor);
+				insert(target, div0, anchor);
 				insert(target, t4, anchor);
+				insert(target, div1, anchor);
+				append(div1, t5);
+				append(div1, t6);
+				append(div1, t7);
+				insert(target, t8, anchor);
 				if (if_block4) if_block4.m(target, anchor);
 				insert(target, if_block4_anchor, anchor);
 			},
 
 			p: function update(changed, ctx) {
-				if (ctx.dataDisplay.hasPinned) {
+				if (ctx.dataDisplay.isPinned) {
 					if (!if_block0) {
 						if_block0 = create_if_block_12(ctx);
 						if_block0.c();
@@ -22650,13 +22655,19 @@ var app = (function () {
 				}
 
 				if (changed.dataDisplay) {
-					set_style(div, "width", "" + ctx.dataDisplay.pinned.progress + "%");
+					set_style(div0, "width", "" + ctx.dataDisplay.pinned.progressPositive + "%");
 				}
 
-				if (ctx.dataDisplay.pinned.startsIn >= 0) {
-					if (if_block4) {
-						if_block4.p(changed, ctx);
-					} else {
+				if ((changed.dataDisplay) && t5_value !== (t5_value = ctx.dataDisplay.pinned.progress)) {
+					set_data(t5, t5_value);
+				}
+
+				if ((changed.dataDisplay) && t7_value !== (t7_value = `${ctx.dataDisplay.pinned.startsIn <= 0 ? '+' : ''}${-ctx.dataDisplay.pinned.startsIn}`)) {
+					set_data(t7, t7_value);
+				}
+
+				if (ctx.dataDisplay.pinned.startsIn > 0) {
+					if (!if_block4) {
 						if_block4 = create_if_block_7(ctx);
 						if_block4.c();
 						if_block4.m(if_block4_anchor.parentNode, if_block4_anchor);
@@ -22690,8 +22701,10 @@ var app = (function () {
 
 				if (detaching) {
 					detach(t3);
-					detach(div);
+					detach(div0);
 					detach(t4);
+					detach(div1);
+					detach(t8);
 				}
 
 				if (if_block4) if_block4.d(detaching);
@@ -22703,15 +22716,15 @@ var app = (function () {
 		};
 	}
 
-	// (190:8) {#if dataDisplay.hasPinned}
+	// (200:8) {#if dataDisplay.isPinned}
 	function create_if_block_12(ctx) {
 		var div, dispose;
 
 		return {
 			c: function create() {
 				div = element("div");
-				div.className = "pin pinned icon-pin svelte-pzr0lp";
-				add_location(div, file, 190, 10, 5347);
+				div.className = "pin pinned icon-pin svelte-1wwfbob";
+				add_location(div, file, 200, 10, 5611);
 				dispose = listen(div, "click", ctx.click_handler);
 			},
 
@@ -22729,7 +22742,7 @@ var app = (function () {
 		};
 	}
 
-	// (197:8) {#if dataDisplay.pinned.surcycle}
+	// (207:8) {#if dataDisplay.pinned.surcycle}
 	function create_if_block_11(ctx) {
 		var div, t_value = ctx.dataDisplay.pinned.surcycle, t;
 
@@ -22737,8 +22750,8 @@ var app = (function () {
 			c: function create() {
 				div = element("div");
 				t = text(t_value);
-				div.className = "surcycle-title svelte-pzr0lp";
-				add_location(div, file, 197, 10, 5543);
+				div.className = "surcycle-title svelte-1wwfbob";
+				add_location(div, file, 207, 10, 5807);
 			},
 
 			m: function mount(target, anchor) {
@@ -22760,7 +22773,7 @@ var app = (function () {
 		};
 	}
 
-	// (200:8) {#if dataDisplay.pinned.title}
+	// (210:8) {#if dataDisplay.pinned.title}
 	function create_if_block_10(ctx) {
 		var div, t_value = ctx.dataDisplay.pinned.title, t;
 
@@ -22768,8 +22781,8 @@ var app = (function () {
 			c: function create() {
 				div = element("div");
 				t = text(t_value);
-				div.className = "title svelte-pzr0lp";
-				add_location(div, file, 200, 10, 5673);
+				div.className = "title svelte-1wwfbob";
+				add_location(div, file, 210, 10, 5937);
 			},
 
 			m: function mount(target, anchor) {
@@ -22791,7 +22804,7 @@ var app = (function () {
 		};
 	}
 
-	// (208:42) 
+	// (218:42) 
 	function create_if_block_9(ctx) {
 		var div, t_value = formatDate(ctx.dataDisplay.pinned.date, 'D MMM YYYY'), t;
 
@@ -22799,7 +22812,7 @@ var app = (function () {
 			c: function create() {
 				div = element("div");
 				t = text(t_value);
-				add_location(div, file, 208, 10, 5988);
+				add_location(div, file, 218, 10, 6252);
 			},
 
 			m: function mount(target, anchor) {
@@ -22821,7 +22834,7 @@ var app = (function () {
 		};
 	}
 
-	// (203:8) {#if dataDisplay.pinned.dateFrom || dataDisplay.pinned.dateTo}
+	// (213:8) {#if dataDisplay.pinned.dateFrom || dataDisplay.pinned.dateTo}
 	function create_if_block_8(ctx) {
 		var div, t_value = concatDates(ctx.dataDisplay.pinned.dateFrom, ctx.dataDisplay.pinned.dateTo), t;
 
@@ -22829,7 +22842,7 @@ var app = (function () {
 			c: function create() {
 				div = element("div");
 				t = text(t_value);
-				add_location(div, file, 203, 10, 5823);
+				add_location(div, file, 213, 10, 6087);
 			},
 
 			m: function mount(target, anchor) {
@@ -22851,29 +22864,20 @@ var app = (function () {
 		};
 	}
 
-	// (212:8) {#if dataDisplay.pinned.startsIn >= 0}
+	// (229:8) {#if dataDisplay.pinned.startsIn > 0}
 	function create_if_block_7(ctx) {
-		var div, t0, t1_value = ctx.dataDisplay.pinned.startsIn, t1;
+		var div;
 
 		return {
 			c: function create() {
 				div = element("div");
-				t0 = text("J-");
-				t1 = text(t1_value);
-				div.className = "soon svelte-pzr0lp";
-				add_location(div, file, 212, 10, 6205);
+				div.textContent = "À venir";
+				div.className = "soon svelte-1wwfbob";
+				add_location(div, file, 229, 10, 6674);
 			},
 
 			m: function mount(target, anchor) {
 				insert(target, div, anchor);
-				append(div, t0);
-				append(div, t1);
-			},
-
-			p: function update(changed, ctx) {
-				if ((changed.dataDisplay) && t1_value !== (t1_value = ctx.dataDisplay.pinned.startsIn)) {
-					set_data(t1, t1_value);
-				}
 			},
 
 			d: function destroy(detaching) {
@@ -22884,29 +22888,20 @@ var app = (function () {
 		};
 	}
 
-	// (232:10) {#if cycle.startsIn >= 0}
+	// (258:10) {#if cycle.startsIn > 0}
 	function create_if_block_5(ctx) {
-		var div, t0, t1_value = ctx.cycle.startsIn, t1;
+		var div;
 
 		return {
 			c: function create() {
 				div = element("div");
-				t0 = text("J-");
-				t1 = text(t1_value);
-				div.className = "soon svelte-pzr0lp";
-				add_location(div, file, 232, 12, 6845);
+				div.textContent = "À venir";
+				div.className = "soon svelte-1wwfbob";
+				add_location(div, file, 258, 12, 7581);
 			},
 
 			m: function mount(target, anchor) {
 				insert(target, div, anchor);
-				append(div, t0);
-				append(div, t1);
-			},
-
-			p: function update(changed, ctx) {
-				if ((changed.dataDisplay) && t1_value !== (t1_value = ctx.cycle.startsIn)) {
-					set_data(t1, t1_value);
-				}
 			},
 
 			d: function destroy(detaching) {
@@ -22917,15 +22912,15 @@ var app = (function () {
 		};
 	}
 
-	// (220:6) {#each dataDisplay.ponc as cycle, i}
+	// (241:6) {#each dataDisplay.ponc as cycle, i}
 	function create_each_block_1(ctx) {
-		var div4, div0, div0_data_id_value, t0, div1, t1_value = ctx.cycle.title, t1, t2, div2, t3_value = concatDates(ctx.cycle.dateFrom, ctx.cycle.dateTo), t3, t4, div3, t5, dispose;
+		var div5, div0, div0_data_id_value, t0, div1, t1_value = ctx.cycle.title, t1, t2, div2, t3_value = concatDates(ctx.cycle.dateFrom, ctx.cycle.dateTo), t3, t4, div3, t5, div4, t6_value = ctx.cycle.progress, t6, t7, t8_value = `${ctx.cycle.startsIn <= 0 ? '+' : ''}${-ctx.cycle.startsIn}`, t8, t9, dispose;
 
-		var if_block = (ctx.cycle.startsIn >= 0) && create_if_block_5(ctx);
+		var if_block = (ctx.cycle.startsIn > 0) && create_if_block_5(ctx);
 
 		return {
 			c: function create() {
-				div4 = element("div");
+				div5 = element("div");
 				div0 = element("div");
 				t0 = space();
 				div1 = element("div");
@@ -22936,34 +22931,46 @@ var app = (function () {
 				t4 = space();
 				div3 = element("div");
 				t5 = space();
+				div4 = element("div");
+				t6 = text(t6_value);
+				t7 = text("% / J");
+				t8 = text(t8_value);
+				t9 = space();
 				if (if_block) if_block.c();
 				div0.dataset.id = div0_data_id_value = ctx.cycle.id;
-				div0.className = "pin icon-pin svelte-pzr0lp";
-				add_location(div0, file, 221, 10, 6441);
-				div1.className = "title svelte-pzr0lp";
-				add_location(div1, file, 227, 10, 6619);
-				add_location(div2, file, 228, 10, 6669);
-				div3.className = "progress svelte-pzr0lp";
-				set_style(div3, "width", "" + ctx.cycle.progress + "%");
-				add_location(div3, file, 229, 10, 6735);
-				div4.className = "cycle svelte-pzr0lp";
-				add_location(div4, file, 220, 8, 6410);
+				div0.className = "pin icon-pin svelte-1wwfbob";
+				add_location(div0, file, 242, 10, 7027);
+				div1.className = "title svelte-1wwfbob";
+				add_location(div1, file, 248, 10, 7205);
+				add_location(div2, file, 249, 10, 7255);
+				div3.className = "progress svelte-1wwfbob";
+				set_style(div3, "width", "" + ctx.cycle.progressPositive + "%");
+				add_location(div3, file, 250, 10, 7321);
+				div4.className = "info svelte-1wwfbob";
+				add_location(div4, file, 252, 10, 7400);
+				div5.className = "cycle svelte-1wwfbob";
+				add_location(div5, file, 241, 8, 6996);
 				dispose = listen(div0, "click", ctx.click_handler_1);
 			},
 
 			m: function mount(target, anchor) {
-				insert(target, div4, anchor);
-				append(div4, div0);
-				append(div4, t0);
-				append(div4, div1);
+				insert(target, div5, anchor);
+				append(div5, div0);
+				append(div5, t0);
+				append(div5, div1);
 				append(div1, t1);
-				append(div4, t2);
-				append(div4, div2);
+				append(div5, t2);
+				append(div5, div2);
 				append(div2, t3);
-				append(div4, t4);
-				append(div4, div3);
-				append(div4, t5);
-				if (if_block) if_block.m(div4, null);
+				append(div5, t4);
+				append(div5, div3);
+				append(div5, t5);
+				append(div5, div4);
+				append(div4, t6);
+				append(div4, t7);
+				append(div4, t8);
+				append(div5, t9);
+				if (if_block) if_block.m(div5, null);
 			},
 
 			p: function update(changed, ctx) {
@@ -22980,16 +22987,22 @@ var app = (function () {
 				}
 
 				if (changed.dataDisplay) {
-					set_style(div3, "width", "" + ctx.cycle.progress + "%");
+					set_style(div3, "width", "" + ctx.cycle.progressPositive + "%");
 				}
 
-				if (ctx.cycle.startsIn >= 0) {
-					if (if_block) {
-						if_block.p(changed, ctx);
-					} else {
+				if ((changed.dataDisplay) && t6_value !== (t6_value = ctx.cycle.progress)) {
+					set_data(t6, t6_value);
+				}
+
+				if ((changed.dataDisplay) && t8_value !== (t8_value = `${ctx.cycle.startsIn <= 0 ? '+' : ''}${-ctx.cycle.startsIn}`)) {
+					set_data(t8, t8_value);
+				}
+
+				if (ctx.cycle.startsIn > 0) {
+					if (!if_block) {
 						if_block = create_if_block_5(ctx);
 						if_block.c();
-						if_block.m(div4, null);
+						if_block.m(div5, null);
 					}
 				} else if (if_block) {
 					if_block.d(1);
@@ -22999,7 +23012,7 @@ var app = (function () {
 
 			d: function destroy(detaching) {
 				if (detaching) {
-					detach(div4);
+					detach(div5);
 				}
 
 				if (if_block) if_block.d();
@@ -23008,7 +23021,7 @@ var app = (function () {
 		};
 	}
 
-	// (250:10) {#if cycle.title}
+	// (279:10) {#if cycle.title}
 	function create_if_block_4(ctx) {
 		var div, t_value = ctx.cycle.title, t;
 
@@ -23016,8 +23029,8 @@ var app = (function () {
 			c: function create() {
 				div = element("div");
 				t = text(t_value);
-				div.className = "title svelte-pzr0lp";
-				add_location(div, file, 250, 12, 7382);
+				div.className = "title svelte-1wwfbob";
+				add_location(div, file, 279, 12, 8226);
 			},
 
 			m: function mount(target, anchor) {
@@ -23039,7 +23052,7 @@ var app = (function () {
 		};
 	}
 
-	// (255:31) 
+	// (284:31) 
 	function create_if_block_3(ctx) {
 		var div, t_value = formatDate(ctx.cycle.date, 'D MMM YYYY'), t;
 
@@ -23047,7 +23060,7 @@ var app = (function () {
 			c: function create() {
 				div = element("div");
 				t = text(t_value);
-				add_location(div, file, 255, 12, 7600);
+				add_location(div, file, 284, 12, 8444);
 			},
 
 			m: function mount(target, anchor) {
@@ -23069,7 +23082,7 @@ var app = (function () {
 		};
 	}
 
-	// (253:10) {#if cycle.dateFrom || cycle.dateTo}
+	// (282:10) {#if cycle.dateFrom || cycle.dateTo}
 	function create_if_block_2(ctx) {
 		var div, t_value = concatDates(ctx.cycle.dateFrom, ctx.cycle.dateTo), t;
 
@@ -23077,7 +23090,7 @@ var app = (function () {
 			c: function create() {
 				div = element("div");
 				t = text(t_value);
-				add_location(div, file, 253, 12, 7499);
+				add_location(div, file, 282, 12, 8343);
 			},
 
 			m: function mount(target, anchor) {
@@ -23099,7 +23112,7 @@ var app = (function () {
 		};
 	}
 
-	// (258:10) {#if cycle.startsIn >= 0}
+	// (288:10) {#if cycle.startsIn >= 0}
 	function create_if_block_1(ctx) {
 		var div, t0, t1_value = ctx.cycle.startsIn, t1;
 
@@ -23108,8 +23121,8 @@ var app = (function () {
 				div = element("div");
 				t0 = text("J-");
 				t1 = text(t1_value);
-				div.className = "soon svelte-pzr0lp";
-				add_location(div, file, 258, 12, 7717);
+				div.className = "info svelte-1wwfbob";
+				add_location(div, file, 288, 12, 8563);
 			},
 
 			m: function mount(target, anchor) {
@@ -23132,7 +23145,7 @@ var app = (function () {
 		};
 	}
 
-	// (240:6) {#each dataDisplay.reg as cycle, i}
+	// (269:6) {#each dataDisplay.reg as cycle, i}
 	function create_each_block(ctx) {
 		var div2, div0, div0_data_id_value, t0, div1, t1_value = ctx.cycle.surcycle, t1, t2, t3, t4, t5, div2_class_value, dispose;
 
@@ -23163,12 +23176,12 @@ var app = (function () {
 				if (if_block2) if_block2.c();
 				t5 = space();
 				div0.dataset.id = div0_data_id_value = ctx.cycle.id;
-				div0.className = "pin icon-pin svelte-pzr0lp";
-				add_location(div0, file, 242, 10, 7111);
-				div1.className = "surcycle-title svelte-pzr0lp";
-				add_location(div1, file, 248, 10, 7289);
-				div2.className = div2_class_value = "cycle reg " + (ctx.cycle.type === 'surcycle' ? 'surcycle' : '') + " svelte-pzr0lp";
-				add_location(div2, file, 240, 8, 7028);
+				div0.className = "pin icon-pin svelte-1wwfbob";
+				add_location(div0, file, 271, 10, 7955);
+				div1.className = "surcycle-title svelte-1wwfbob";
+				add_location(div1, file, 277, 10, 8133);
+				div2.className = div2_class_value = "cycle reg " + (ctx.cycle.type === 'surcycle' ? 'surcycle' : '') + " svelte-1wwfbob";
+				add_location(div2, file, 269, 8, 7872);
 				dispose = listen(div0, "click", ctx.click_handler_2);
 			},
 
@@ -23233,7 +23246,7 @@ var app = (function () {
 					if_block2 = null;
 				}
 
-				if ((changed.dataDisplay) && div2_class_value !== (div2_class_value = "cycle reg " + (ctx.cycle.type === 'surcycle' ? 'surcycle' : '') + " svelte-pzr0lp")) {
+				if ((changed.dataDisplay) && div2_class_value !== (div2_class_value = "cycle reg " + (ctx.cycle.type === 'surcycle' ? 'surcycle' : '') + " svelte-1wwfbob")) {
 					div2.className = div2_class_value;
 				}
 			},
@@ -23305,7 +23318,7 @@ var app = (function () {
 
 	function instance($$self, $$props, $$invalidate) {
 		
-	  let { curDateValid, lookAheadDays, regOrderFixed, showEmptySurcycles, showData } = $$props;
+	  let { curDateValid, lookAheadReg, lookAheadPonc, showData } = $$props;
 
 	  let data = [];
 	  let idPinned = null;
@@ -23318,6 +23331,11 @@ var app = (function () {
 	    let dataReg = await (await fetch(
 	      "https://gist.githubusercontent.com/nltesown/a310518cfa88cd52b13a55f3e737d75f/raw/cycles-ext-2.json"
 	    )).json();
+
+	    // NOTICE: je retire manuellement l'item Fellini/Picasso (= exposition)
+	    dataPonc = lodash(dataPonc)
+	      .filter(b => b.idCycle !== 442)
+	      .value();
 
 	    $$invalidate('data', data = [dataPonc, dataReg]);
 	    console.log("Cycles mounted");
@@ -23337,27 +23355,24 @@ var app = (function () {
 
 		$$self.$set = $$props => {
 			if ('curDateValid' in $$props) $$invalidate('curDateValid', curDateValid = $$props.curDateValid);
-			if ('lookAheadDays' in $$props) $$invalidate('lookAheadDays', lookAheadDays = $$props.lookAheadDays);
-			if ('regOrderFixed' in $$props) $$invalidate('regOrderFixed', regOrderFixed = $$props.regOrderFixed);
-			if ('showEmptySurcycles' in $$props) $$invalidate('showEmptySurcycles', showEmptySurcycles = $$props.showEmptySurcycles);
+			if ('lookAheadReg' in $$props) $$invalidate('lookAheadReg', lookAheadReg = $$props.lookAheadReg);
+			if ('lookAheadPonc' in $$props) $$invalidate('lookAheadPonc', lookAheadPonc = $$props.lookAheadPonc);
 			if ('showData' in $$props) $$invalidate('showData', showData = $$props.showData);
 		};
 
 		let dataDisplay;
 
-		$$self.$$.update = ($$dirty = { data: 1, curDateValid: 1, idPinned: 1, lookAheadDays: 1, regOrderFixed: 1, showEmptySurcycles: 1 }) => {
-			if ($$dirty.data || $$dirty.curDateValid || $$dirty.idPinned || $$dirty.lookAheadDays || $$dirty.regOrderFixed || $$dirty.showEmptySurcycles) { $$invalidate('dataDisplay', dataDisplay = prepData(data, curDateValid, idPinned, {
-	        lookAheadDays: lookAheadDays,
-	        regOrderFixed: regOrderFixed,
-	        showEmptySurcycles: showEmptySurcycles
+		$$self.$$.update = ($$dirty = { data: 1, curDateValid: 1, idPinned: 1, lookAheadPonc: 1, lookAheadReg: 1 }) => {
+			if ($$dirty.data || $$dirty.curDateValid || $$dirty.idPinned || $$dirty.lookAheadPonc || $$dirty.lookAheadReg) { $$invalidate('dataDisplay', dataDisplay = prepData(data, curDateValid, idPinned, {
+	        lookAheadPonc: lookAheadPonc,
+	        lookAheadReg: lookAheadReg
 	      })); }
 		};
 
 		return {
 			curDateValid,
-			lookAheadDays,
-			regOrderFixed,
-			showEmptySurcycles,
+			lookAheadReg,
+			lookAheadPonc,
 			showData,
 			idPinned,
 			dataDisplay,
@@ -23370,21 +23385,18 @@ var app = (function () {
 	class Cycles extends SvelteComponentDev {
 		constructor(options) {
 			super(options);
-			init(this, options, instance, create_fragment, safe_not_equal, ["curDateValid", "lookAheadDays", "regOrderFixed", "showEmptySurcycles", "showData"]);
+			init(this, options, instance, create_fragment, safe_not_equal, ["curDateValid", "lookAheadReg", "lookAheadPonc", "showData"]);
 
 			const { ctx } = this.$$;
 			const props = options.props || {};
 			if (ctx.curDateValid === undefined && !('curDateValid' in props)) {
 				console.warn("<Cycles> was created without expected prop 'curDateValid'");
 			}
-			if (ctx.lookAheadDays === undefined && !('lookAheadDays' in props)) {
-				console.warn("<Cycles> was created without expected prop 'lookAheadDays'");
+			if (ctx.lookAheadReg === undefined && !('lookAheadReg' in props)) {
+				console.warn("<Cycles> was created without expected prop 'lookAheadReg'");
 			}
-			if (ctx.regOrderFixed === undefined && !('regOrderFixed' in props)) {
-				console.warn("<Cycles> was created without expected prop 'regOrderFixed'");
-			}
-			if (ctx.showEmptySurcycles === undefined && !('showEmptySurcycles' in props)) {
-				console.warn("<Cycles> was created without expected prop 'showEmptySurcycles'");
+			if (ctx.lookAheadPonc === undefined && !('lookAheadPonc' in props)) {
+				console.warn("<Cycles> was created without expected prop 'lookAheadPonc'");
 			}
 			if (ctx.showData === undefined && !('showData' in props)) {
 				console.warn("<Cycles> was created without expected prop 'showData'");
@@ -23399,27 +23411,19 @@ var app = (function () {
 			throw new Error("<Cycles>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
 		}
 
-		get lookAheadDays() {
+		get lookAheadReg() {
 			throw new Error("<Cycles>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
 		}
 
-		set lookAheadDays(value) {
+		set lookAheadReg(value) {
 			throw new Error("<Cycles>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
 		}
 
-		get regOrderFixed() {
+		get lookAheadPonc() {
 			throw new Error("<Cycles>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
 		}
 
-		set regOrderFixed(value) {
-			throw new Error("<Cycles>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-		}
-
-		get showEmptySurcycles() {
-			throw new Error("<Cycles>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-		}
-
-		set showEmptySurcycles(value) {
+		set lookAheadPonc(value) {
 			throw new Error("<Cycles>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
 		}
 
@@ -23437,14 +23441,13 @@ var app = (function () {
 	const file$1 = "src\\App.svelte";
 
 	function create_fragment$1(ctx) {
-		var header, label0, t0, input0, t1, span, t3, t4, label1, t5, select, option0, option1, option2, option3, option4, option5, option6, option7, option8, t15, t16, label2, t17, input1, t18, label3, t19, input2, t20, label4, t21, input3, t22, div, h1, t23_value = moment(ctx.curDateValid).format('ddd D MMMM YYYY'), t23, t24, current, dispose;
+		var header, label0, t0, input0, t1, span, t3, t4, label1, t5, select0, option0, option1, option2, option3, option4, option5, t12, t13, label2, t14, select1, option6, option7, option8, option9, option10, option11, t21, t22, label3, t23, input1, t24, div, h1, t25_value = moment(ctx.curDateValid).format('ddd D MMMM YYYY'), t25, t26, current, dispose;
 
 		var cycles = new Cycles({
 			props: {
 			curDateValid: ctx.curDateValid,
-			lookAheadDays: parseInt(ctx.lookAheadDays, 10),
-			regOrderFixed: !!ctx.regOrderFixed,
-			showEmptySurcycles: !!ctx.showEmptySurcycles,
+			lookAheadPonc: parseInt(ctx.lookAheadPonc, 10),
+			lookAheadReg: parseInt(ctx.lookAheadReg, 10),
 			showData: !!ctx.showData
 		},
 			$$inline: true
@@ -23462,113 +23465,121 @@ var app = (function () {
 				t3 = text("\r\n    )");
 				t4 = space();
 				label1 = element("label");
-				t5 = text("Affichage exhaustif sur\r\n    ");
-				select = element("select");
+				t5 = text("Lookahead : cycles ponctuels\r\n    ");
+				select0 = element("select");
 				option0 = element("option");
 				option0.textContent = "0";
 				option1 = element("option");
-				option1.textContent = "6";
+				option1.textContent = "7";
 				option2 = element("option");
-				option2.textContent = "13";
+				option2.textContent = "14";
 				option3 = element("option");
-				option3.textContent = "14";
+				option3.textContent = "21";
 				option4 = element("option");
-				option4.textContent = "20";
+				option4.textContent = "28";
 				option5 = element("option");
-				option5.textContent = "21";
-				option6 = element("option");
-				option6.textContent = "29";
-				option7 = element("option");
-				option7.textContent = "59";
-				option8 = element("option");
-				option8.textContent = "89";
-				t15 = text("\r\n    jours");
-				t16 = space();
+				option5.textContent = "120";
+				t12 = text("\r\n    j.");
+				t13 = space();
 				label2 = element("label");
-				t17 = text("Fixer l'ordre des surcycles\r\n    ");
-				input1 = element("input");
-				t18 = space();
-				label3 = element("label");
-				t19 = text("Montrer les surcycles vides\r\n    ");
-				input2 = element("input");
-				t20 = space();
-				label4 = element("label");
-				t21 = text("Voir les données\r\n    ");
-				input3 = element("input");
+				t14 = text("cycles réguliers\r\n    ");
+				select1 = element("select");
+				option6 = element("option");
+				option6.textContent = "0";
+				option7 = element("option");
+				option7.textContent = "6";
+				option8 = element("option");
+				option8.textContent = "13";
+				option9 = element("option");
+				option9.textContent = "20";
+				option10 = element("option");
+				option10.textContent = "27";
+				option11 = element("option");
+				option11.textContent = "120";
+				t21 = text("\r\n    j.");
 				t22 = space();
+				label3 = element("label");
+				t23 = text("Voir les données\r\n    ");
+				input1 = element("input");
+				t24 = space();
 				div = element("div");
 				h1 = element("h1");
-				t23 = text(t23_value);
-				t24 = space();
+				t25 = text(t25_value);
+				t26 = space();
 				cycles.$$.fragment.c();
 				attr(input0, "type", "date");
-				add_location(input0, file$1, 122, 4, 2186);
+				add_location(input0, file$1, 120, 4, 2069);
 				set_style(span, "text-decoration", "underline");
 				set_style(span, "cursor", "pointer");
-				add_location(span, file$1, 124, 4, 2241);
+				add_location(span, file$1, 122, 4, 2124);
 				label0.id = "datepicker";
-				label0.className = "svelte-13j9jhh";
-				add_location(label0, file$1, 111, 2, 1961);
+				label0.className = "svelte-ipnetf";
+				add_location(label0, file$1, 118, 2, 2030);
 				option0.__value = "0";
 				option0.value = option0.__value;
-				add_location(option0, file$1, 139, 6, 2599);
+				add_location(option0, file$1, 137, 6, 2487);
 				option1.__value = "6";
 				option1.value = option1.__value;
-				add_location(option1, file$1, 140, 6, 2635);
+				add_location(option1, file$1, 138, 6, 2523);
 				option2.__value = "13";
 				option2.value = option2.__value;
-				option2.selected = true;
-				add_location(option2, file$1, 141, 6, 2671);
-				option3.__value = "14";
+				add_location(option2, file$1, 139, 6, 2559);
+				option3.__value = "21";
 				option3.value = option3.__value;
-				add_location(option3, file$1, 142, 6, 2718);
-				option4.__value = "20";
+				option3.selected = true;
+				add_location(option3, file$1, 140, 6, 2597);
+				option4.__value = "28";
 				option4.value = option4.__value;
-				add_location(option4, file$1, 143, 6, 2756);
-				option5.__value = "21";
+				add_location(option4, file$1, 141, 6, 2644);
+				option5.__value = "120";
 				option5.value = option5.__value;
-				add_location(option5, file$1, 144, 6, 2794);
-				option6.__value = "29";
+				add_location(option5, file$1, 142, 6, 2682);
+				if (ctx.lookAheadPonc === void 0) add_render_callback(() => ctx.select0_change_handler.call(select0));
+				add_location(select0, file$1, 136, 4, 2444);
+				label1.className = "svelte-ipnetf";
+				add_location(label1, file$1, 134, 2, 2397);
+				option6.__value = "0";
 				option6.value = option6.__value;
-				add_location(option6, file$1, 145, 6, 2832);
-				option7.__value = "59";
+				add_location(option6, file$1, 149, 6, 2830);
+				option7.__value = "6";
 				option7.value = option7.__value;
-				add_location(option7, file$1, 146, 6, 2870);
-				option8.__value = "89";
+				add_location(option7, file$1, 150, 6, 2866);
+				option8.__value = "13";
 				option8.value = option8.__value;
-				add_location(option8, file$1, 147, 6, 2908);
-				if (ctx.lookAheadDays === void 0) add_render_callback(() => ctx.select_change_handler.call(select));
-				add_location(select, file$1, 138, 4, 2556);
-				label1.className = "svelte-13j9jhh";
-				add_location(label1, file$1, 136, 2, 2514);
+				option8.selected = true;
+				add_location(option8, file$1, 151, 6, 2902);
+				option9.__value = "20";
+				option9.value = option9.__value;
+				add_location(option9, file$1, 152, 6, 2949);
+				option10.__value = "27";
+				option10.value = option10.__value;
+				add_location(option10, file$1, 153, 6, 2987);
+				option11.__value = "120";
+				option11.value = option11.__value;
+				add_location(option11, file$1, 154, 6, 3025);
+				if (ctx.lookAheadReg === void 0) add_render_callback(() => ctx.select1_change_handler.call(select1));
+				add_location(select1, file$1, 148, 4, 2788);
+				label2.className = "svelte-ipnetf";
+				add_location(label2, file$1, 146, 2, 2753);
 				attr(input1, "type", "checkbox");
-				add_location(input1, file$1, 153, 4, 3026);
-				label2.className = "svelte-13j9jhh";
-				add_location(label2, file$1, 151, 2, 2980);
-				attr(input2, "type", "checkbox");
-				add_location(input2, file$1, 157, 4, 3142);
-				label3.className = "svelte-13j9jhh";
-				add_location(label3, file$1, 155, 2, 3096);
-				attr(input3, "type", "checkbox");
-				add_location(input3, file$1, 161, 4, 3252);
-				label4.className = "svelte-13j9jhh";
-				add_location(label4, file$1, 159, 2, 3217);
-				header.className = "svelte-13j9jhh";
-				add_location(header, file$1, 110, 0, 1949);
-				h1.className = "svelte-13j9jhh";
-				add_location(h1, file$1, 167, 2, 3357);
-				div.className = "container svelte-13j9jhh";
-				add_location(div, file$1, 166, 0, 3330);
+				add_location(input1, file$1, 170, 4, 3384);
+				label3.className = "svelte-ipnetf";
+				add_location(label3, file$1, 168, 2, 3349);
+				header.className = "svelte-ipnetf";
+				add_location(header, file$1, 109, 0, 1853);
+				h1.className = "svelte-ipnetf";
+				add_location(h1, file$1, 176, 2, 3489);
+				div.className = "container svelte-ipnetf";
+				add_location(div, file$1, 175, 0, 3462);
 
 				dispose = [
 					listen(input0, "input", ctx.input0_input_handler),
 					listen(span, "click", ctx.click_handler),
-					listen(label0, "DOMMouseScroll", ctx.DOMMouseScroll_handler),
-					listen(label0, "wheel", ctx.wheel_handler),
-					listen(select, "change", ctx.select_change_handler),
+					listen(select0, "change", ctx.select0_change_handler),
+					listen(select1, "change", ctx.select1_change_handler),
 					listen(input1, "change", ctx.input1_change_handler),
-					listen(input2, "change", ctx.input2_change_handler),
-					listen(input3, "change", ctx.input3_change_handler)
+					listen(header, "DOMMouseScroll", ctx.DOMMouseScroll_handler),
+					listen(header, "wheel", ctx.wheel_handler)
 				];
 			},
 
@@ -23590,66 +23601,61 @@ var app = (function () {
 				append(header, t4);
 				append(header, label1);
 				append(label1, t5);
-				append(label1, select);
-				append(select, option0);
-				append(select, option1);
-				append(select, option2);
-				append(select, option3);
-				append(select, option4);
-				append(select, option5);
-				append(select, option6);
-				append(select, option7);
-				append(select, option8);
+				append(label1, select0);
+				append(select0, option0);
+				append(select0, option1);
+				append(select0, option2);
+				append(select0, option3);
+				append(select0, option4);
+				append(select0, option5);
 
-				select_option(select, ctx.lookAheadDays);
+				select_option(select0, ctx.lookAheadPonc);
 
-				append(label1, t15);
-				append(header, t16);
+				append(label1, t12);
+				append(header, t13);
 				append(header, label2);
-				append(label2, t17);
-				append(label2, input1);
+				append(label2, t14);
+				append(label2, select1);
+				append(select1, option6);
+				append(select1, option7);
+				append(select1, option8);
+				append(select1, option9);
+				append(select1, option10);
+				append(select1, option11);
 
-				input1.checked = ctx.regOrderFixed;
+				select_option(select1, ctx.lookAheadReg);
 
-				append(header, t18);
+				append(label2, t21);
+				append(header, t22);
 				append(header, label3);
-				append(label3, t19);
-				append(label3, input2);
+				append(label3, t23);
+				append(label3, input1);
 
-				input2.checked = ctx.showEmptySurcycles;
+				input1.checked = ctx.showData;
 
-				append(header, t20);
-				append(header, label4);
-				append(label4, t21);
-				append(label4, input3);
-
-				input3.checked = ctx.showData;
-
-				insert(target, t22, anchor);
+				insert(target, t24, anchor);
 				insert(target, div, anchor);
 				append(div, h1);
-				append(h1, t23);
-				append(div, t24);
+				append(h1, t25);
+				append(div, t26);
 				mount_component(cycles, div, null);
 				current = true;
 			},
 
 			p: function update(changed, ctx) {
 				if (changed.curDate) input0.value = ctx.curDate;
-				if (changed.lookAheadDays) select_option(select, ctx.lookAheadDays);
-				if (changed.regOrderFixed) input1.checked = ctx.regOrderFixed;
-				if (changed.showEmptySurcycles) input2.checked = ctx.showEmptySurcycles;
-				if (changed.showData) input3.checked = ctx.showData;
+				if (changed.lookAheadPonc) select_option(select0, ctx.lookAheadPonc);
+				if (changed.lookAheadReg) select_option(select1, ctx.lookAheadReg);
+				if (changed.showData) input1.checked = ctx.showData;
 
-				if ((!current || changed.curDateValid) && t23_value !== (t23_value = moment(ctx.curDateValid).format('ddd D MMMM YYYY'))) {
-					set_data(t23, t23_value);
+				if ((!current || changed.curDateValid) && t25_value !== (t25_value = moment(ctx.curDateValid).format('ddd D MMMM YYYY'))) {
+					set_data(t25, t25_value);
 				}
 
 				var cycles_changes = {};
 				if (changed.curDateValid) cycles_changes.curDateValid = ctx.curDateValid;
-				if (changed.lookAheadDays) cycles_changes.lookAheadDays = parseInt(ctx.lookAheadDays, 10);
-				if (changed.regOrderFixed) cycles_changes.regOrderFixed = !!ctx.regOrderFixed;
-				if (changed.showEmptySurcycles) cycles_changes.showEmptySurcycles = !!ctx.showEmptySurcycles;
+				if (changed.lookAheadPonc) cycles_changes.lookAheadPonc = parseInt(ctx.lookAheadPonc, 10);
+				if (changed.lookAheadReg) cycles_changes.lookAheadReg = parseInt(ctx.lookAheadReg, 10);
 				if (changed.showData) cycles_changes.showData = !!ctx.showData;
 				cycles.$set(cycles_changes);
 			},
@@ -23669,7 +23675,7 @@ var app = (function () {
 			d: function destroy(detaching) {
 				if (detaching) {
 					detach(header);
-					detach(t22);
+					detach(t24);
 					detach(div);
 				}
 
@@ -23682,7 +23688,6 @@ var app = (function () {
 
 	function instance$1($$self, $$props, $$invalidate) {
 		
-	  // import { pubDate } from "./prepDataCyclesReg.js";
 
 	  moment.updateLocale("fr", {
 	    months: [
@@ -23728,9 +23733,7 @@ var app = (function () {
 	  let curDate = moment()
 	    .startOf("day")
 	    .format("YYYY-MM-DD");
-	  let lookAheadDays;
-	  let regOrderFixed = false;
-	  let showEmptySurcycles = true;
+	  let lookAheadPonc, lookAheadReg;
 	  let showData = false;
 
 	  function changeDate(e) {
@@ -23752,35 +23755,30 @@ var app = (function () {
 		        e.preventDefault();
 		      }
 
-		function DOMMouseScroll_handler(e) {
-		      changeDate(e.deltaY);
-		      e.preventDefault();
-		    }
+		function select0_change_handler() {
+			lookAheadPonc = select_value(this);
+			$$invalidate('lookAheadPonc', lookAheadPonc);
+		}
 
-		function wheel_handler(e) {
-		      changeDate(e.deltaY);
-		      e.preventDefault();
-		    }
-
-		function select_change_handler() {
-			lookAheadDays = select_value(this);
-			$$invalidate('lookAheadDays', lookAheadDays);
+		function select1_change_handler() {
+			lookAheadReg = select_value(this);
+			$$invalidate('lookAheadReg', lookAheadReg);
 		}
 
 		function input1_change_handler() {
-			regOrderFixed = this.checked;
-			$$invalidate('regOrderFixed', regOrderFixed);
-		}
-
-		function input2_change_handler() {
-			showEmptySurcycles = this.checked;
-			$$invalidate('showEmptySurcycles', showEmptySurcycles);
-		}
-
-		function input3_change_handler() {
 			showData = this.checked;
 			$$invalidate('showData', showData);
 		}
+
+		function DOMMouseScroll_handler(e) {
+		    changeDate(e.deltaY);
+		    e.preventDefault();
+		  }
+
+		function wheel_handler(e) {
+		    changeDate(e.deltaY);
+		    e.preventDefault();
+		  }
 
 		let curDateValid;
 
@@ -23794,20 +23792,18 @@ var app = (function () {
 
 		return {
 			curDate,
-			lookAheadDays,
-			regOrderFixed,
-			showEmptySurcycles,
+			lookAheadPonc,
+			lookAheadReg,
 			showData,
 			changeDate,
 			curDateValid,
 			input0_input_handler,
 			click_handler,
-			DOMMouseScroll_handler,
-			wheel_handler,
-			select_change_handler,
+			select0_change_handler,
+			select1_change_handler,
 			input1_change_handler,
-			input2_change_handler,
-			input3_change_handler
+			DOMMouseScroll_handler,
+			wheel_handler
 		};
 	}
 
