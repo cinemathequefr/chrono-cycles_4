@@ -1,7 +1,6 @@
 <script>
   import Cycles from "./Cycles.svelte";
   import moment from "moment";
-  // import { pubDate } from "./prepDataCyclesReg.js";
 
   moment.updateLocale("fr", {
     months: [
@@ -47,9 +46,7 @@
   let curDate = moment()
     .startOf("day")
     .format("YYYY-MM-DD");
-  let lookAheadDays;
-  let regOrderFixed = false;
-  let showEmptySurcycles = true;
+  let lookAheadPonc, lookAheadReg;
   let showData = false;
 
   $: curDateValid =
@@ -135,20 +132,30 @@
     )
   </label>
   <label>
-    Affichage exhaustif sur
-    <select bind:value={lookAheadDays}>
+    Lookahead : cycles ponctuels
+    <select bind:value={lookAheadPonc}>
+      <option value="0">0</option>
+      <option value="6">7</option>
+      <option value="13">14</option>
+      <option value="21" selected>21</option>
+      <option value="28">28</option>
+      <option value="120">120</option>
+    </select>
+    j.
+  </label>
+  <label>
+    cycles réguliers
+    <select bind:value={lookAheadReg}>
       <option value="0">0</option>
       <option value="6">6</option>
       <option value="13" selected>13</option>
-      <option value="14">14</option>
       <option value="20">20</option>
-      <option value="21">21</option>
-      <option value="29">29</option>
-      <option value="59">59</option>
-      <option value="89">89</option>
+      <option value="27">27</option>
+      <option value="120">120</option>
     </select>
-    jours
+    j.
   </label>
+  <!---
   <label>
     Fixer l'ordre des surcycles
     <input type="checkbox" bind:checked={regOrderFixed} />
@@ -157,6 +164,7 @@
     Montrer les surcycles vides
     <input type="checkbox" bind:checked={showEmptySurcycles} />
   </label>
+  -->
   <label>
     Voir les données
     <input type="checkbox" bind:checked={showData} />
@@ -169,9 +177,8 @@
 
   <Cycles
     {curDateValid}
-    lookAheadDays={parseInt(lookAheadDays, 10)}
-    regOrderFixed={!!regOrderFixed}
-    showEmptySurcycles={!!showEmptySurcycles}
+    lookAheadPonc={parseInt(lookAheadPonc, 10)}
+    lookAheadReg={parseInt(lookAheadReg, 10)}
     showData={!!showData} />
 
 </div>

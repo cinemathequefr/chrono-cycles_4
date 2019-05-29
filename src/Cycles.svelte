@@ -2,20 +2,15 @@
   import { onMount } from "svelte";
   import { prepData } from "./prepData.js";
   import { concatDates, formatDate } from "./utils.js";
-  export let curDateValid,
-    lookAheadDays,
-    regOrderFixed,
-    showEmptySurcycles,
-    showData;
+  export let curDateValid, lookAheadReg, lookAheadPonc, showData;
 
   let data = [];
   let idPinned = null;
   let dataPinned = [];
 
   $: dataDisplay = prepData(data, curDateValid, idPinned, {
-    lookAheadDays: lookAheadDays,
-    regOrderFixed: regOrderFixed,
-    showEmptySurcycles: showEmptySurcycles
+    lookAheadPonc: lookAheadPonc,
+    lookAheadReg: lookAheadReg
   });
 
   onMount(async () => {

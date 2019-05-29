@@ -4,9 +4,8 @@ import moment from "moment";
 function prepData(data, curDate, idPinned, options) {
 
   options = _({}).assign({
-    lookAheadDays: 0,
-    regOrderFixed: false,
-    showEmptySurcycles: true,
+    lookAheadPonc: 0,
+    lookAheadReg: 0,
     surcycles: [
       "Aujourd'hui le cinéma",
       "Cinéma bis",
@@ -48,19 +47,14 @@ function prepData(data, curDate, idPinned, options) {
 
       }).value();
     })
-
-
-
-
-    // .sortBy(d => d.dateFrom)
-    // .reverse() // Premier tri
     .value();
 
+  console.log(options.lookAheadPonc);
 
   let dataPonc2 = _(dataPonc1).filter(b =>
     moment(b.dateFrom)
     .startOf("day")
-    .diff(curDate, "days") <= options.lookAheadDays ||
+    .diff(curDate, "days") <= options.lookAheadPonc ||
     b.id === parseInt(idPinned, 10) // On conserve un cycle épinglé
   ).value();
 
@@ -121,7 +115,7 @@ function prepData(data, curDate, idPinned, options) {
           i === 0 ||
           (moment(v.date)
             .startOf("day")
-            .diff(curDate, "days") <= options.lookAheadDays) ||
+            .diff(curDate, "days") <= options.lookAheadReg) ||
           v.id === parseInt(idPinned, 10) // On conserve un cycle épinglé
         ) {
           return _(acc).concat(v);
@@ -133,12 +127,10 @@ function prepData(data, curDate, idPinned, options) {
     )
     .value();
 
-  // Rajoute les surcycles vides (si l'option est sélectionnée)
-  if (options.showEmptySurcycles === true) {
-    dataReg2 = _({})
-      .assign(_.zipObject(options.surcycles, _.fill(new Array(options.surcycles.length), [])), dataReg2)
-      .value();
-  }
+  // Rajoute les surcycles vides
+  dataReg2 = _({})
+    .assign(_.zipObject(options.surcycles, _.fill(new Array(options.surcycles.length), [])), dataReg2)
+    .value();
 
   // Transforme l'objet en tableau d'objets et nettoye les données inutiles
   dataReg2 = _(dataReg2)
@@ -168,11 +160,7 @@ function prepData(data, curDate, idPinned, options) {
     })
     .map()
     .flatten()
-    .orderBy(a =>
-      !!options.regOrderFixed ?
-      _.indexOf(options.surcycles, a.surcycle) :
-      a.date
-    )
+    .orderBy(a => a.date)
     .value();
 
   // Isole les données du cycle épinglé dans les cycles ponctuels, puis réguliers
@@ -196,10 +184,10 @@ function prepData(data, curDate, idPinned, options) {
   }
 
   return {
-    ponc: ponc,
-    reg: reg,
     pinned: pinned,
-    hasPinned: hasPinned
+    hasPinned: hasPinned,
+    ponc: ponc,
+    reg: reg
   };
 }
 
