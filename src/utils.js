@@ -50,41 +50,36 @@ moment.updateLocale("fr", {
  * Concaténation intelligente de dates de début / date de fin.
  * @example
  * ["1", "jan", "2016"], ["31", "déc", "2016"] => "1 jan-31 déc 2016"
- * @param {Object|null} a Objet moment : date de début. (NOTE : Actuellement, ne prend pas en compte les cas où la date de début se serait pas fourni.)
- * @param {Objet|null} b Objet moment ou valeur `null` : date de fin.
+ * @param {Object} a Objet moment : date de début.
+ * @param {Objet} b Objet moment : date de fin.
  * @returns {string} Chaîne des deux dates concaténées.
- * @todo Pouvoir passer `separators` en paramètre.
  */
 function concatDates(a, b) {
-
   a = formatDate(a, "D MMMM YYYY");
   b = formatDate(b, "D MMMM YYYY");
 
-  let separators = ["Du ", " au ", "À partir du ", "Jusqu'au ", ""];
+  let o = _([a.split(" "), b.split(" ")])
+    .unzip()
+    .thru(d => {
+      let doStop = false;
+      return _(d).reduceRight(
+        (acc, v) => {
+          if (!(v[0] === v[1] && doStop === false)) {
+            doStop = true;
+            acc[0].unshift(v[0]);
+          }
+          acc[1].unshift(v[1]);
+          return acc;
+        },
+        [
+          [],
+          []
+        ]
+      );
+    }).value();
 
-  if (a === b) {
-    return separators[4] + a;
-  }
-
-  if (a && b) {
-    a = a.split(" ");
-    b = b.split(" ");
-    let b2 = _.clone(b);
-    let i = a.length - 1;
-    if (a[i] === b[i] && i > -1) {
-      i--;
-      a.pop();
-      b.pop();
-      concatDates(a, b);
-    }
-    return a.length === 0 ?
-      b2.join(" ") :
-      separators[0] + [a.join(" "), b2.join(" ")].join(separators[1]);
-  }
-
-  if (a && !b) {
-    return separators[2] + a;
-  }
+  if (o[0].length === 0) return o[1].join(" ");
+  return `Du ${o[0].join(" ")} au ${o[1].join(" ")}`;
 }
 
 /**
