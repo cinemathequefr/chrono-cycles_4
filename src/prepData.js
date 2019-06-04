@@ -189,11 +189,17 @@ function prepData(data, curDate, idPinned, options) {
   }
 
   return {
-    pinned: pinned,
+    zoneA: pinned,
     isPinned: isPinned,
-    ponc: ponc,
-    reg: reg
+    zoneC: ponc,
+    zoneD: reg
   };
+  // return {
+  //   pinned: pinned,
+  //   isPinned: isPinned,
+  //   ponc: ponc,
+  //   reg: reg
+  // };
 }
 
 

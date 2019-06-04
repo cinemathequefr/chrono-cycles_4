@@ -69,7 +69,8 @@
     text-decoration: inherit;
   }
 
-  .zone-c {
+  .zone-c,
+  .zone-d {
     position: relative;
     display: block;
     float: left;
@@ -196,7 +197,7 @@
 {:else}
   <div class="cycles-container">
     <div class="zone-a">
-      {#if dataDisplay.pinned}
+      {#if dataDisplay.zoneA}
         {#if dataDisplay.isPinned}
           <div
             class="pin pinned icon-pin"
@@ -204,41 +205,41 @@
               idPinned = null;
             }} />
         {/if}
-        {#if dataDisplay.pinned.surcycle}
-          <div class="surcycle-title">{dataDisplay.pinned.surcycle}</div>
+        {#if dataDisplay.zoneA.surcycle}
+          <div class="surcycle-title">{dataDisplay.zoneA.surcycle}</div>
         {/if}
-        {#if dataDisplay.pinned.title}
-          <div class="title">{dataDisplay.pinned.title}</div>
+        {#if dataDisplay.zoneA.title}
+          <div class="title">{dataDisplay.zoneA.title}</div>
         {/if}
-        {#if dataDisplay.pinned.dateFrom || dataDisplay.pinned.dateTo}
+        {#if dataDisplay.zoneA.dateFrom || dataDisplay.zoneA.dateTo}
           <div>
-             {concatDates(dataDisplay.pinned.dateFrom, dataDisplay.pinned.dateTo)}
+             {concatDates(dataDisplay.zoneA.dateFrom, dataDisplay.zoneA.dateTo)}
 
           </div>
-        {:else if dataDisplay.pinned.date}
-          <div>{formatDate(dataDisplay.pinned.date, 'D MMM YYYY')}</div>
+        {:else if dataDisplay.zoneA.date}
+          <div>{formatDate(dataDisplay.zoneA.date, 'D MMM YYYY')}</div>
         {/if}
         <div
           class="progress"
-          style="width:{dataDisplay.pinned.progressPositive}%;" />
+          style="width:{dataDisplay.zoneA.progressPositive}%;" />
 
         <div class="info">
-           {dataDisplay.pinned.progress}% / J{`${dataDisplay.pinned.startsIn <= 0 ? '+' : ''}${-dataDisplay.pinned.startsIn}`}
+           {dataDisplay.zoneA.progress}% / J{`${dataDisplay.zoneA.startsIn <= 0 ? '+' : ''}${-dataDisplay.zoneA.startsIn}`}
 
         </div>
-        {#if dataDisplay.pinned.startsIn > 0}
+        {#if dataDisplay.zoneA.startsIn > 0}
           <div class="soon">À venir</div>
         {/if}
 
-        <!-- {#if dataDisplay.pinned.startsIn >= 0}
-          <div class="soon">J-{dataDisplay.pinned.startsIn}</div>
+        <!-- {#if dataDisplay.zoneA.startsIn >= 0}
+          <div class="soon">J-{dataDisplay.zoneA.startsIn}</div>
         {/if} -->
       {/if}
     </div>
     <div class="zone-b" />
 
     <div class="zone-c">
-      {#each dataDisplay.ponc as cycle, i}
+      {#each dataDisplay.zoneC as cycle, i}
         <div class="cycle">
           <div
             data-id={cycle.id}
@@ -265,8 +266,8 @@
         </div>
       {/each}
     </div>
-    <div class="zone-c">
-      {#each dataDisplay.reg as cycle, i}
+    <div class="zone-d">
+      {#each dataDisplay.zoneD as cycle, i}
         <div class="cycle reg {cycle.type === 'surcycle' ? 'surcycle' : ''}">
 
           <div
