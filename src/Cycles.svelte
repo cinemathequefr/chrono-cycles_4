@@ -222,9 +222,9 @@
         <div
           class="progress"
           style="width:{dataDisplay.zoneA.progressPositive}%;" />
-
         <div class="info">
-           {dataDisplay.zoneA.progress}% / J{`${dataDisplay.zoneA.startsIn <= 0 ? '+' : ''}${-dataDisplay.zoneA.startsIn}`}
+          {#if dataDisplay.zoneA.progress}{dataDisplay.zoneA.progress}% /{/if}
+          J{`${dataDisplay.zoneA.startsIn <= 0 ? '+' : ''}${-dataDisplay.zoneA.startsIn}`}
 
         </div>
         {#if dataDisplay.zoneA.startsIn > 0}

@@ -99,12 +99,12 @@
     margin-bottom: 48px;
   }
 
-  /*
-  #datepicker:hover {
-    background-color: #eee;
-    cursor: ns-resize;
+  button {
+    font-size: 1.4rem;
+    text-transform: none;
+    letter-spacing: normal;
+    padding: 0 16px;
   }
-*/
 </style>
 
 <header
@@ -119,19 +119,39 @@
   <label id="datepicker">
     Date
     <input type="date" bind:value={curDate} />
-    (
-    <span
-      style="text-decoration: underline; cursor: pointer;"
-      on:click={e => {
-        curDate = moment()
-          .startOf('day')
-          .format('YYYY-MM-DD');
-        e.preventDefault();
-      }}>
-      aujourd'hui
-    </span>
-    )
   </label>
+
+  <button
+    on:click={e => {
+      curDate = moment(curDate)
+        .startOf('day')
+        .add(-1, 'day')
+        .format('YYYY-MM-DD');
+      e.preventDefault();
+    }}>
+    -1 j.
+  </button>
+  <button
+    on:click={e => {
+      curDate = moment(curDate)
+        .startOf('day')
+        .add(1, 'day')
+        .format('YYYY-MM-DD');
+      e.preventDefault();
+    }}>
+    +1 j.
+  </button>
+
+  <button
+    on:click={e => {
+      curDate = moment()
+        .startOf('day')
+        .format('YYYY-MM-DD');
+      e.preventDefault();
+    }}>
+    Aujourd'hui
+  </button>
+
   <label>
     Lookahead : cycles ponctuels
     <select bind:value={lookAheadPonc}>
