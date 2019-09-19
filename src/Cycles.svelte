@@ -230,10 +230,6 @@
         {#if dataDisplay.zoneA.startsIn > 0}
           <div class="soon">À venir</div>
         {/if}
-
-        <!-- {#if dataDisplay.zoneA.startsIn >= 0}
-          <div class="soon">J-{dataDisplay.zoneA.startsIn}</div>
-        {/if} -->
       {/if}
     </div>
     <div class="zone-b" />
