@@ -22211,11 +22211,17 @@ var app = (function () {
 	  }
 
 	  return {
-	    pinned: pinned,
+	    zoneA: pinned,
 	    isPinned: isPinned,
-	    ponc: ponc,
-	    reg: reg
+	    zoneC: ponc,
+	    zoneD: reg
 	  };
+	  // return {
+	  //   pinned: pinned,
+	  //   isPinned: isPinned,
+	  //   ponc: ponc,
+	  //   reg: reg
+	  // };
 	}
 
 
@@ -22355,13 +22361,13 @@ var app = (function () {
 		return child_ctx;
 	}
 
-	// (196:0) {:else}
+	// (197:0) {:else}
 	function create_else_block(ctx) {
 		var div4, div0, t0, div1, t1, div2, t2, div3;
 
-		var if_block = (ctx.dataDisplay.pinned) && create_if_block_6(ctx);
+		var if_block = (ctx.dataDisplay.zoneA) && create_if_block_6(ctx);
 
-		var each_value_1 = ctx.dataDisplay.ponc;
+		var each_value_1 = ctx.dataDisplay.zoneC;
 
 		var each_blocks_1 = [];
 
@@ -22369,7 +22375,7 @@ var app = (function () {
 			each_blocks_1[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
 		}
 
-		var each_value = ctx.dataDisplay.reg;
+		var each_value = ctx.dataDisplay.zoneD;
 
 		var each_blocks = [];
 
@@ -22397,16 +22403,16 @@ var app = (function () {
 				for (var i = 0; i < each_blocks.length; i += 1) {
 					each_blocks[i].c();
 				}
-				div0.className = "zone-a svelte-1wwfbob";
-				add_location(div0, file, 197, 4, 5511);
-				div1.className = "zone-b svelte-1wwfbob";
-				add_location(div1, file, 237, 4, 6892);
-				div2.className = "zone-c svelte-1wwfbob";
-				add_location(div2, file, 239, 4, 6922);
-				div3.className = "zone-c svelte-1wwfbob";
-				add_location(div3, file, 267, 4, 7799);
-				div4.className = "cycles-container svelte-1wwfbob";
-				add_location(div4, file, 196, 2, 5475);
+				div0.className = "zone-a svelte-1u7u8nv";
+				add_location(div0, file, 198, 4, 5523);
+				div1.className = "zone-b svelte-1u7u8nv";
+				add_location(div1, file, 234, 4, 6792);
+				div2.className = "zone-c svelte-1u7u8nv";
+				add_location(div2, file, 236, 4, 6822);
+				div3.className = "zone-d svelte-1u7u8nv";
+				add_location(div3, file, 264, 4, 7700);
+				div4.className = "cycles-container svelte-1u7u8nv";
+				add_location(div4, file, 197, 2, 5487);
 			},
 
 			m: function mount(target, anchor) {
@@ -22431,7 +22437,7 @@ var app = (function () {
 			},
 
 			p: function update(changed, ctx) {
-				if (ctx.dataDisplay.pinned) {
+				if (ctx.dataDisplay.zoneA) {
 					if (if_block) {
 						if_block.p(changed, ctx);
 					} else {
@@ -22445,7 +22451,7 @@ var app = (function () {
 				}
 
 				if (changed.dataDisplay || changed.concatDates) {
-					each_value_1 = ctx.dataDisplay.ponc;
+					each_value_1 = ctx.dataDisplay.zoneC;
 
 					for (var i = 0; i < each_value_1.length; i += 1) {
 						const child_ctx = get_each_context_1(ctx, each_value_1, i);
@@ -22466,7 +22472,7 @@ var app = (function () {
 				}
 
 				if (changed.dataDisplay || changed.concatDates || changed.formatDate) {
-					each_value = ctx.dataDisplay.reg;
+					each_value = ctx.dataDisplay.zoneD;
 
 					for (var i = 0; i < each_value.length; i += 1) {
 						const child_ctx = get_each_context(ctx, each_value, i);
@@ -22501,7 +22507,7 @@ var app = (function () {
 		};
 	}
 
-	// (192:0) {#if showData}
+	// (193:0) {#if showData}
 	function create_if_block(ctx) {
 		var pre, code, t_value = JSON.stringify(ctx.dataDisplay, null, 2), t;
 
@@ -22510,8 +22516,8 @@ var app = (function () {
 				pre = element("pre");
 				code = element("code");
 				t = text(t_value);
-				add_location(code, file, 193, 4, 5401);
-				add_location(pre, file, 192, 2, 5390);
+				add_location(code, file, 194, 4, 5413);
+				add_location(pre, file, 193, 2, 5402);
 			},
 
 			m: function mount(target, anchor) {
@@ -22534,25 +22540,27 @@ var app = (function () {
 		};
 	}
 
-	// (199:6) {#if dataDisplay.pinned}
+	// (200:6) {#if dataDisplay.zoneA}
 	function create_if_block_6(ctx) {
-		var t0, t1, t2, t3, div0, t4, div1, t5_value = ctx.dataDisplay.pinned.progress, t5, t6, t7_value = `${ctx.dataDisplay.pinned.startsIn <= 0 ? '+' : ''}${-ctx.dataDisplay.pinned.startsIn}`, t7, t8, if_block4_anchor;
+		var t0, t1, t2, t3, div0, t4, div1, t5, t6_value = `${ctx.dataDisplay.zoneA.startsIn <= 0 ? '+' : ''}${-ctx.dataDisplay.zoneA.startsIn}`, t6, t7, if_block5_anchor;
 
-		var if_block0 = (ctx.dataDisplay.isPinned) && create_if_block_12(ctx);
+		var if_block0 = (ctx.dataDisplay.isPinned) && create_if_block_13(ctx);
 
-		var if_block1 = (ctx.dataDisplay.pinned.surcycle) && create_if_block_11(ctx);
+		var if_block1 = (ctx.dataDisplay.zoneA.surcycle) && create_if_block_12(ctx);
 
-		var if_block2 = (ctx.dataDisplay.pinned.title) && create_if_block_10(ctx);
+		var if_block2 = (ctx.dataDisplay.zoneA.title) && create_if_block_11(ctx);
 
 		function select_block_type_1(ctx) {
-			if (ctx.dataDisplay.pinned.dateFrom || ctx.dataDisplay.pinned.dateTo) return create_if_block_8;
-			if (ctx.dataDisplay.pinned.date) return create_if_block_9;
+			if (ctx.dataDisplay.zoneA.dateFrom || ctx.dataDisplay.zoneA.dateTo) return create_if_block_9;
+			if (ctx.dataDisplay.zoneA.date) return create_if_block_10;
 		}
 
 		var current_block_type = select_block_type_1(ctx);
 		var if_block3 = current_block_type && current_block_type(ctx);
 
-		var if_block4 = (ctx.dataDisplay.pinned.startsIn > 0) && create_if_block_7(ctx);
+		var if_block4 = (ctx.dataDisplay.zoneA.progress) && create_if_block_8(ctx);
+
+		var if_block5 = (ctx.dataDisplay.zoneA.startsIn > 0) && create_if_block_7(ctx);
 
 		return {
 			c: function create() {
@@ -22567,17 +22575,17 @@ var app = (function () {
 				div0 = element("div");
 				t4 = space();
 				div1 = element("div");
-				t5 = text(t5_value);
-				t6 = text("% / J");
-				t7 = text(t7_value);
-				t8 = space();
 				if (if_block4) if_block4.c();
-				if_block4_anchor = empty();
-				div0.className = "progress svelte-1wwfbob";
-				set_style(div0, "width", "" + ctx.dataDisplay.pinned.progressPositive + "%");
-				add_location(div0, file, 220, 8, 6339);
-				div1.className = "info svelte-1wwfbob";
-				add_location(div1, file, 224, 8, 6451);
+				t5 = text("\r\n          J");
+				t6 = text(t6_value);
+				t7 = space();
+				if (if_block5) if_block5.c();
+				if_block5_anchor = empty();
+				div0.className = "progress svelte-1u7u8nv";
+				set_style(div0, "width", "" + ctx.dataDisplay.zoneA.progressPositive + "%");
+				add_location(div0, file, 221, 8, 6340);
+				div1.className = "info svelte-1u7u8nv";
+				add_location(div1, file, 224, 8, 6449);
 			},
 
 			m: function mount(target, anchor) {
@@ -22592,18 +22600,18 @@ var app = (function () {
 				insert(target, div0, anchor);
 				insert(target, t4, anchor);
 				insert(target, div1, anchor);
+				if (if_block4) if_block4.m(div1, null);
 				append(div1, t5);
 				append(div1, t6);
-				append(div1, t7);
-				insert(target, t8, anchor);
-				if (if_block4) if_block4.m(target, anchor);
-				insert(target, if_block4_anchor, anchor);
+				insert(target, t7, anchor);
+				if (if_block5) if_block5.m(target, anchor);
+				insert(target, if_block5_anchor, anchor);
 			},
 
 			p: function update(changed, ctx) {
 				if (ctx.dataDisplay.isPinned) {
 					if (!if_block0) {
-						if_block0 = create_if_block_12(ctx);
+						if_block0 = create_if_block_13(ctx);
 						if_block0.c();
 						if_block0.m(t0.parentNode, t0);
 					}
@@ -22612,11 +22620,11 @@ var app = (function () {
 					if_block0 = null;
 				}
 
-				if (ctx.dataDisplay.pinned.surcycle) {
+				if (ctx.dataDisplay.zoneA.surcycle) {
 					if (if_block1) {
 						if_block1.p(changed, ctx);
 					} else {
-						if_block1 = create_if_block_11(ctx);
+						if_block1 = create_if_block_12(ctx);
 						if_block1.c();
 						if_block1.m(t1.parentNode, t1);
 					}
@@ -22625,11 +22633,11 @@ var app = (function () {
 					if_block1 = null;
 				}
 
-				if (ctx.dataDisplay.pinned.title) {
+				if (ctx.dataDisplay.zoneA.title) {
 					if (if_block2) {
 						if_block2.p(changed, ctx);
 					} else {
-						if_block2 = create_if_block_10(ctx);
+						if_block2 = create_if_block_11(ctx);
 						if_block2.c();
 						if_block2.m(t2.parentNode, t2);
 					}
@@ -22650,26 +22658,35 @@ var app = (function () {
 				}
 
 				if (changed.dataDisplay) {
-					set_style(div0, "width", "" + ctx.dataDisplay.pinned.progressPositive + "%");
+					set_style(div0, "width", "" + ctx.dataDisplay.zoneA.progressPositive + "%");
 				}
 
-				if ((changed.dataDisplay) && t5_value !== (t5_value = ctx.dataDisplay.pinned.progress)) {
-					set_data(t5, t5_value);
-				}
-
-				if ((changed.dataDisplay) && t7_value !== (t7_value = `${ctx.dataDisplay.pinned.startsIn <= 0 ? '+' : ''}${-ctx.dataDisplay.pinned.startsIn}`)) {
-					set_data(t7, t7_value);
-				}
-
-				if (ctx.dataDisplay.pinned.startsIn > 0) {
-					if (!if_block4) {
-						if_block4 = create_if_block_7(ctx);
+				if (ctx.dataDisplay.zoneA.progress) {
+					if (if_block4) {
+						if_block4.p(changed, ctx);
+					} else {
+						if_block4 = create_if_block_8(ctx);
 						if_block4.c();
-						if_block4.m(if_block4_anchor.parentNode, if_block4_anchor);
+						if_block4.m(div1, t5);
 					}
 				} else if (if_block4) {
 					if_block4.d(1);
 					if_block4 = null;
+				}
+
+				if ((changed.dataDisplay) && t6_value !== (t6_value = `${ctx.dataDisplay.zoneA.startsIn <= 0 ? '+' : ''}${-ctx.dataDisplay.zoneA.startsIn}`)) {
+					set_data(t6, t6_value);
+				}
+
+				if (ctx.dataDisplay.zoneA.startsIn > 0) {
+					if (!if_block5) {
+						if_block5 = create_if_block_7(ctx);
+						if_block5.c();
+						if_block5.m(if_block5_anchor.parentNode, if_block5_anchor);
+					}
+				} else if (if_block5) {
+					if_block5.d(1);
+					if_block5 = null;
 				}
 			},
 
@@ -22699,27 +22716,32 @@ var app = (function () {
 					detach(div0);
 					detach(t4);
 					detach(div1);
-					detach(t8);
 				}
 
-				if (if_block4) if_block4.d(detaching);
+				if (if_block4) if_block4.d();
 
 				if (detaching) {
-					detach(if_block4_anchor);
+					detach(t7);
+				}
+
+				if (if_block5) if_block5.d(detaching);
+
+				if (detaching) {
+					detach(if_block5_anchor);
 				}
 			}
 		};
 	}
 
-	// (200:8) {#if dataDisplay.isPinned}
-	function create_if_block_12(ctx) {
+	// (201:8) {#if dataDisplay.isPinned}
+	function create_if_block_13(ctx) {
 		var div, dispose;
 
 		return {
 			c: function create() {
 				div = element("div");
-				div.className = "pin pinned icon-pin svelte-1wwfbob";
-				add_location(div, file, 200, 10, 5611);
+				div.className = "pin pinned icon-pin svelte-1u7u8nv";
+				add_location(div, file, 201, 10, 5622);
 				dispose = listen(div, "click", ctx.click_handler);
 			},
 
@@ -22737,16 +22759,47 @@ var app = (function () {
 		};
 	}
 
-	// (207:8) {#if dataDisplay.pinned.surcycle}
+	// (208:8) {#if dataDisplay.zoneA.surcycle}
+	function create_if_block_12(ctx) {
+		var div, t_value = ctx.dataDisplay.zoneA.surcycle, t;
+
+		return {
+			c: function create() {
+				div = element("div");
+				t = text(t_value);
+				div.className = "surcycle-title svelte-1u7u8nv";
+				add_location(div, file, 208, 10, 5817);
+			},
+
+			m: function mount(target, anchor) {
+				insert(target, div, anchor);
+				append(div, t);
+			},
+
+			p: function update(changed, ctx) {
+				if ((changed.dataDisplay) && t_value !== (t_value = ctx.dataDisplay.zoneA.surcycle)) {
+					set_data(t, t_value);
+				}
+			},
+
+			d: function destroy(detaching) {
+				if (detaching) {
+					detach(div);
+				}
+			}
+		};
+	}
+
+	// (211:8) {#if dataDisplay.zoneA.title}
 	function create_if_block_11(ctx) {
-		var div, t_value = ctx.dataDisplay.pinned.surcycle, t;
+		var div, t_value = ctx.dataDisplay.zoneA.title, t;
 
 		return {
 			c: function create() {
 				div = element("div");
 				t = text(t_value);
-				div.className = "surcycle-title svelte-1wwfbob";
-				add_location(div, file, 207, 10, 5807);
+				div.className = "title svelte-1u7u8nv";
+				add_location(div, file, 211, 10, 5945);
 			},
 
 			m: function mount(target, anchor) {
@@ -22755,7 +22808,7 @@ var app = (function () {
 			},
 
 			p: function update(changed, ctx) {
-				if ((changed.dataDisplay) && t_value !== (t_value = ctx.dataDisplay.pinned.surcycle)) {
+				if ((changed.dataDisplay) && t_value !== (t_value = ctx.dataDisplay.zoneA.title)) {
 					set_data(t, t_value);
 				}
 			},
@@ -22768,16 +22821,15 @@ var app = (function () {
 		};
 	}
 
-	// (210:8) {#if dataDisplay.pinned.title}
+	// (219:41) 
 	function create_if_block_10(ctx) {
-		var div, t_value = ctx.dataDisplay.pinned.title, t;
+		var div, t_value = formatDate(ctx.dataDisplay.zoneA.date, 'D MMM YYYY'), t;
 
 		return {
 			c: function create() {
 				div = element("div");
 				t = text(t_value);
-				div.className = "title svelte-1wwfbob";
-				add_location(div, file, 210, 10, 5937);
+				add_location(div, file, 219, 10, 6254);
 			},
 
 			m: function mount(target, anchor) {
@@ -22786,7 +22838,7 @@ var app = (function () {
 			},
 
 			p: function update(changed, ctx) {
-				if ((changed.dataDisplay) && t_value !== (t_value = ctx.dataDisplay.pinned.title)) {
+				if ((changed.dataDisplay) && t_value !== (t_value = formatDate(ctx.dataDisplay.zoneA.date, 'D MMM YYYY'))) {
 					set_data(t, t_value);
 				}
 			},
@@ -22799,15 +22851,15 @@ var app = (function () {
 		};
 	}
 
-	// (218:42) 
+	// (214:8) {#if dataDisplay.zoneA.dateFrom || dataDisplay.zoneA.dateTo}
 	function create_if_block_9(ctx) {
-		var div, t_value = formatDate(ctx.dataDisplay.pinned.date, 'D MMM YYYY'), t;
+		var div, t_value = concatDates(ctx.dataDisplay.zoneA.dateFrom, ctx.dataDisplay.zoneA.dateTo), t;
 
 		return {
 			c: function create() {
 				div = element("div");
 				t = text(t_value);
-				add_location(div, file, 218, 10, 6252);
+				add_location(div, file, 214, 10, 6092);
 			},
 
 			m: function mount(target, anchor) {
@@ -22816,7 +22868,7 @@ var app = (function () {
 			},
 
 			p: function update(changed, ctx) {
-				if ((changed.dataDisplay) && t_value !== (t_value = formatDate(ctx.dataDisplay.pinned.date, 'D MMM YYYY'))) {
+				if ((changed.dataDisplay) && t_value !== (t_value = concatDates(ctx.dataDisplay.zoneA.dateFrom, ctx.dataDisplay.zoneA.dateTo))) {
 					set_data(t, t_value);
 				}
 			},
@@ -22829,37 +22881,37 @@ var app = (function () {
 		};
 	}
 
-	// (213:8) {#if dataDisplay.pinned.dateFrom || dataDisplay.pinned.dateTo}
+	// (226:10) {#if dataDisplay.zoneA.progress}
 	function create_if_block_8(ctx) {
-		var div, t_value = concatDates(ctx.dataDisplay.pinned.dateFrom, ctx.dataDisplay.pinned.dateTo), t;
+		var t0_value = ctx.dataDisplay.zoneA.progress, t0, t1;
 
 		return {
 			c: function create() {
-				div = element("div");
-				t = text(t_value);
-				add_location(div, file, 213, 10, 6087);
+				t0 = text(t0_value);
+				t1 = text("% /");
 			},
 
 			m: function mount(target, anchor) {
-				insert(target, div, anchor);
-				append(div, t);
+				insert(target, t0, anchor);
+				insert(target, t1, anchor);
 			},
 
 			p: function update(changed, ctx) {
-				if ((changed.dataDisplay) && t_value !== (t_value = concatDates(ctx.dataDisplay.pinned.dateFrom, ctx.dataDisplay.pinned.dateTo))) {
-					set_data(t, t_value);
+				if ((changed.dataDisplay) && t0_value !== (t0_value = ctx.dataDisplay.zoneA.progress)) {
+					set_data(t0, t0_value);
 				}
 			},
 
 			d: function destroy(detaching) {
 				if (detaching) {
-					detach(div);
+					detach(t0);
+					detach(t1);
 				}
 			}
 		};
 	}
 
-	// (229:8) {#if dataDisplay.pinned.startsIn > 0}
+	// (230:8) {#if dataDisplay.zoneA.startsIn > 0}
 	function create_if_block_7(ctx) {
 		var div;
 
@@ -22867,8 +22919,8 @@ var app = (function () {
 			c: function create() {
 				div = element("div");
 				div.textContent = "À venir";
-				div.className = "soon svelte-1wwfbob";
-				add_location(div, file, 229, 10, 6674);
+				div.className = "soon svelte-1u7u8nv";
+				add_location(div, file, 230, 10, 6715);
 			},
 
 			m: function mount(target, anchor) {
@@ -22883,7 +22935,7 @@ var app = (function () {
 		};
 	}
 
-	// (258:10) {#if cycle.startsIn > 0}
+	// (255:10) {#if cycle.startsIn > 0}
 	function create_if_block_5(ctx) {
 		var div;
 
@@ -22891,8 +22943,8 @@ var app = (function () {
 			c: function create() {
 				div = element("div");
 				div.textContent = "À venir";
-				div.className = "soon svelte-1wwfbob";
-				add_location(div, file, 258, 12, 7581);
+				div.className = "soon svelte-1u7u8nv";
+				add_location(div, file, 255, 12, 7482);
 			},
 
 			m: function mount(target, anchor) {
@@ -22907,7 +22959,7 @@ var app = (function () {
 		};
 	}
 
-	// (241:6) {#each dataDisplay.ponc as cycle, i}
+	// (238:6) {#each dataDisplay.zoneC as cycle, i}
 	function create_each_block_1(ctx) {
 		var div5, div0, div0_data_id_value, t0, div1, t1_value = ctx.cycle.title, t1, t2, div2, t3_value = concatDates(ctx.cycle.dateFrom, ctx.cycle.dateTo), t3, t4, div3, t5, div4, t6_value = ctx.cycle.progress, t6, t7, t8_value = `${ctx.cycle.startsIn <= 0 ? '+' : ''}${-ctx.cycle.startsIn}`, t8, t9, dispose;
 
@@ -22933,18 +22985,18 @@ var app = (function () {
 				t9 = space();
 				if (if_block) if_block.c();
 				div0.dataset.id = div0_data_id_value = ctx.cycle.id;
-				div0.className = "pin icon-pin svelte-1wwfbob";
-				add_location(div0, file, 242, 10, 7027);
-				div1.className = "title svelte-1wwfbob";
-				add_location(div1, file, 248, 10, 7205);
-				add_location(div2, file, 249, 10, 7255);
-				div3.className = "progress svelte-1wwfbob";
+				div0.className = "pin icon-pin svelte-1u7u8nv";
+				add_location(div0, file, 239, 10, 6928);
+				div1.className = "title svelte-1u7u8nv";
+				add_location(div1, file, 245, 10, 7106);
+				add_location(div2, file, 246, 10, 7156);
+				div3.className = "progress svelte-1u7u8nv";
 				set_style(div3, "width", "" + ctx.cycle.progressPositive + "%");
-				add_location(div3, file, 250, 10, 7321);
-				div4.className = "info svelte-1wwfbob";
-				add_location(div4, file, 252, 10, 7400);
-				div5.className = "cycle svelte-1wwfbob";
-				add_location(div5, file, 241, 8, 6996);
+				add_location(div3, file, 247, 10, 7222);
+				div4.className = "info svelte-1u7u8nv";
+				add_location(div4, file, 249, 10, 7301);
+				div5.className = "cycle svelte-1u7u8nv";
+				add_location(div5, file, 238, 8, 6897);
 				dispose = listen(div0, "click", ctx.click_handler_1);
 			},
 
@@ -23016,7 +23068,7 @@ var app = (function () {
 		};
 	}
 
-	// (279:10) {#if cycle.title}
+	// (276:10) {#if cycle.title}
 	function create_if_block_4(ctx) {
 		var div, t_value = ctx.cycle.title, t;
 
@@ -23024,8 +23076,8 @@ var app = (function () {
 			c: function create() {
 				div = element("div");
 				t = text(t_value);
-				div.className = "title svelte-1wwfbob";
-				add_location(div, file, 279, 12, 8226);
+				div.className = "title svelte-1u7u8nv";
+				add_location(div, file, 276, 12, 8129);
 			},
 
 			m: function mount(target, anchor) {
@@ -23047,7 +23099,7 @@ var app = (function () {
 		};
 	}
 
-	// (284:31) 
+	// (281:31) 
 	function create_if_block_3(ctx) {
 		var div, t_value = formatDate(ctx.cycle.date, 'D MMM YYYY'), t;
 
@@ -23055,7 +23107,7 @@ var app = (function () {
 			c: function create() {
 				div = element("div");
 				t = text(t_value);
-				add_location(div, file, 284, 12, 8444);
+				add_location(div, file, 281, 12, 8347);
 			},
 
 			m: function mount(target, anchor) {
@@ -23077,7 +23129,7 @@ var app = (function () {
 		};
 	}
 
-	// (282:10) {#if cycle.dateFrom || cycle.dateTo}
+	// (279:10) {#if cycle.dateFrom || cycle.dateTo}
 	function create_if_block_2(ctx) {
 		var div, t_value = concatDates(ctx.cycle.dateFrom, ctx.cycle.dateTo), t;
 
@@ -23085,7 +23137,7 @@ var app = (function () {
 			c: function create() {
 				div = element("div");
 				t = text(t_value);
-				add_location(div, file, 282, 12, 8343);
+				add_location(div, file, 279, 12, 8246);
 			},
 
 			m: function mount(target, anchor) {
@@ -23107,7 +23159,7 @@ var app = (function () {
 		};
 	}
 
-	// (288:10) {#if cycle.startsIn >= 0}
+	// (285:10) {#if cycle.startsIn >= 0}
 	function create_if_block_1(ctx) {
 		var div, t0, t1_value = ctx.cycle.startsIn, t1;
 
@@ -23116,8 +23168,8 @@ var app = (function () {
 				div = element("div");
 				t0 = text("J-");
 				t1 = text(t1_value);
-				div.className = "info svelte-1wwfbob";
-				add_location(div, file, 288, 12, 8563);
+				div.className = "info svelte-1u7u8nv";
+				add_location(div, file, 285, 12, 8466);
 			},
 
 			m: function mount(target, anchor) {
@@ -23140,7 +23192,7 @@ var app = (function () {
 		};
 	}
 
-	// (269:6) {#each dataDisplay.reg as cycle, i}
+	// (266:6) {#each dataDisplay.zoneD as cycle, i}
 	function create_each_block(ctx) {
 		var div2, div0, div0_data_id_value, t0, div1, t1_value = ctx.cycle.surcycle, t1, t2, t3, t4, t5, div2_class_value, dispose;
 
@@ -23171,12 +23223,12 @@ var app = (function () {
 				if (if_block2) if_block2.c();
 				t5 = space();
 				div0.dataset.id = div0_data_id_value = ctx.cycle.id;
-				div0.className = "pin icon-pin svelte-1wwfbob";
-				add_location(div0, file, 271, 10, 7955);
-				div1.className = "surcycle-title svelte-1wwfbob";
-				add_location(div1, file, 277, 10, 8133);
-				div2.className = div2_class_value = "cycle reg " + (ctx.cycle.type === 'surcycle' ? 'surcycle' : '') + " svelte-1wwfbob";
-				add_location(div2, file, 269, 8, 7872);
+				div0.className = "pin icon-pin svelte-1u7u8nv";
+				add_location(div0, file, 268, 10, 7858);
+				div1.className = "surcycle-title svelte-1u7u8nv";
+				add_location(div1, file, 274, 10, 8036);
+				div2.className = div2_class_value = "cycle reg " + (ctx.cycle.type === 'surcycle' ? 'surcycle' : '') + " svelte-1u7u8nv";
+				add_location(div2, file, 266, 8, 7775);
 				dispose = listen(div0, "click", ctx.click_handler_2);
 			},
 
@@ -23241,7 +23293,7 @@ var app = (function () {
 					if_block2 = null;
 				}
 
-				if ((changed.dataDisplay) && div2_class_value !== (div2_class_value = "cycle reg " + (ctx.cycle.type === 'surcycle' ? 'surcycle' : '') + " svelte-1wwfbob")) {
+				if ((changed.dataDisplay) && div2_class_value !== (div2_class_value = "cycle reg " + (ctx.cycle.type === 'surcycle' ? 'surcycle' : '') + " svelte-1u7u8nv")) {
 					div2.className = div2_class_value;
 				}
 			},
@@ -23436,7 +23488,7 @@ var app = (function () {
 	const file$1 = "src\\App.svelte";
 
 	function create_fragment$1(ctx) {
-		var header, label0, t0, input0, t1, span, t3, t4, label1, t5, select0, option0, option1, option2, option3, option4, option5, t12, t13, label2, t14, select1, option6, option7, option8, option9, option10, option11, t21, t22, label3, t23, input1, t24, div, h1, t25_value = moment(ctx.curDateValid).format('ddd D MMMM YYYY'), t25, t26, current, dispose;
+		var header, label0, t0, input0, t1, button0, t3, button1, t5, button2, t7, label1, t8, select0, option0, option1, option2, option3, option4, option5, t15, t16, label2, t17, select1, option6, option7, option8, option9, option10, option11, t24, t25, label3, t26, input1, t27, div, h1, t28_value = moment(ctx.curDateValid).format('ddd D MMMM YYYY'), t28, t29, current, dispose;
 
 		var cycles = new Cycles({
 			props: {
@@ -23454,13 +23506,18 @@ var app = (function () {
 				label0 = element("label");
 				t0 = text("Date\r\n    ");
 				input0 = element("input");
-				t1 = text("\r\n    (\r\n    ");
-				span = element("span");
-				span.textContent = "aujourd'hui";
-				t3 = text("\r\n    )");
-				t4 = space();
+				t1 = space();
+				button0 = element("button");
+				button0.textContent = "-1 j.";
+				t3 = space();
+				button1 = element("button");
+				button1.textContent = "+1 j.";
+				t5 = space();
+				button2 = element("button");
+				button2.textContent = "Aujourd'hui";
+				t7 = space();
 				label1 = element("label");
-				t5 = text("Lookahead : cycles ponctuels\r\n    ");
+				t8 = text("Lookahead : cycles ponctuels\r\n    ");
 				select0 = element("select");
 				option0 = element("option");
 				option0.textContent = "0";
@@ -23474,10 +23531,10 @@ var app = (function () {
 				option4.textContent = "28";
 				option5 = element("option");
 				option5.textContent = "120";
-				t12 = text("\r\n    j.");
-				t13 = space();
+				t15 = text("\r\n    j.");
+				t16 = space();
 				label2 = element("label");
-				t14 = text("cycles réguliers\r\n    ");
+				t17 = text("cycles réguliers\r\n    ");
 				select1 = element("select");
 				option6 = element("option");
 				option6.textContent = "0";
@@ -23491,85 +23548,90 @@ var app = (function () {
 				option10.textContent = "27";
 				option11 = element("option");
 				option11.textContent = "120";
-				t21 = text("\r\n    j.");
-				t22 = space();
+				t24 = text("\r\n    j.");
+				t25 = space();
 				label3 = element("label");
-				t23 = text("Voir les données\r\n    ");
+				t26 = text("Voir les données\r\n    ");
 				input1 = element("input");
-				t24 = space();
+				t27 = space();
 				div = element("div");
 				h1 = element("h1");
-				t25 = text(t25_value);
-				t26 = space();
+				t28 = text(t28_value);
+				t29 = space();
 				cycles.$$.fragment.c();
 				attr(input0, "type", "date");
-				add_location(input0, file$1, 120, 4, 2069);
-				set_style(span, "text-decoration", "underline");
-				set_style(span, "cursor", "pointer");
-				add_location(span, file$1, 122, 4, 2124);
+				add_location(input0, file$1, 120, 4, 2097);
 				label0.id = "datepicker";
-				label0.className = "svelte-ipnetf";
-				add_location(label0, file$1, 118, 2, 2030);
+				label0.className = "svelte-1h4gk0x";
+				add_location(label0, file$1, 118, 2, 2058);
+				button0.className = "svelte-1h4gk0x";
+				add_location(button0, file$1, 123, 2, 2157);
+				button1.className = "svelte-1h4gk0x";
+				add_location(button1, file$1, 133, 2, 2365);
+				button2.className = "svelte-1h4gk0x";
+				add_location(button2, file$1, 144, 2, 2574);
 				option0.__value = "0";
 				option0.value = option0.__value;
-				add_location(option0, file$1, 137, 6, 2487);
+				add_location(option0, file$1, 157, 6, 2848);
 				option1.__value = "6";
 				option1.value = option1.__value;
-				add_location(option1, file$1, 138, 6, 2523);
+				add_location(option1, file$1, 158, 6, 2884);
 				option2.__value = "13";
 				option2.value = option2.__value;
-				add_location(option2, file$1, 139, 6, 2559);
+				add_location(option2, file$1, 159, 6, 2920);
 				option3.__value = "21";
 				option3.value = option3.__value;
 				option3.selected = true;
-				add_location(option3, file$1, 140, 6, 2597);
+				add_location(option3, file$1, 160, 6, 2958);
 				option4.__value = "28";
 				option4.value = option4.__value;
-				add_location(option4, file$1, 141, 6, 2644);
+				add_location(option4, file$1, 161, 6, 3005);
 				option5.__value = "120";
 				option5.value = option5.__value;
-				add_location(option5, file$1, 142, 6, 2682);
+				add_location(option5, file$1, 162, 6, 3043);
 				if (ctx.lookAheadPonc === void 0) add_render_callback(() => ctx.select0_change_handler.call(select0));
-				add_location(select0, file$1, 136, 4, 2444);
-				label1.className = "svelte-ipnetf";
-				add_location(label1, file$1, 134, 2, 2397);
+				add_location(select0, file$1, 156, 4, 2805);
+				label1.className = "svelte-1h4gk0x";
+				add_location(label1, file$1, 154, 2, 2758);
 				option6.__value = "0";
 				option6.value = option6.__value;
-				add_location(option6, file$1, 149, 6, 2830);
+				add_location(option6, file$1, 169, 6, 3191);
 				option7.__value = "6";
 				option7.value = option7.__value;
-				add_location(option7, file$1, 150, 6, 2866);
+				add_location(option7, file$1, 170, 6, 3227);
 				option8.__value = "13";
 				option8.value = option8.__value;
 				option8.selected = true;
-				add_location(option8, file$1, 151, 6, 2902);
+				add_location(option8, file$1, 171, 6, 3263);
 				option9.__value = "20";
 				option9.value = option9.__value;
-				add_location(option9, file$1, 152, 6, 2949);
+				add_location(option9, file$1, 172, 6, 3310);
 				option10.__value = "27";
 				option10.value = option10.__value;
-				add_location(option10, file$1, 153, 6, 2987);
+				add_location(option10, file$1, 173, 6, 3348);
 				option11.__value = "120";
 				option11.value = option11.__value;
-				add_location(option11, file$1, 154, 6, 3025);
+				add_location(option11, file$1, 174, 6, 3386);
 				if (ctx.lookAheadReg === void 0) add_render_callback(() => ctx.select1_change_handler.call(select1));
-				add_location(select1, file$1, 148, 4, 2788);
-				label2.className = "svelte-ipnetf";
-				add_location(label2, file$1, 146, 2, 2753);
+				add_location(select1, file$1, 168, 4, 3149);
+				label2.className = "svelte-1h4gk0x";
+				add_location(label2, file$1, 166, 2, 3114);
 				attr(input1, "type", "checkbox");
-				add_location(input1, file$1, 170, 4, 3384);
-				label3.className = "svelte-ipnetf";
-				add_location(label3, file$1, 168, 2, 3349);
-				header.className = "svelte-ipnetf";
-				add_location(header, file$1, 109, 0, 1853);
-				h1.className = "svelte-ipnetf";
-				add_location(h1, file$1, 176, 2, 3489);
-				div.className = "container svelte-ipnetf";
-				add_location(div, file$1, 175, 0, 3462);
+				add_location(input1, file$1, 190, 4, 3745);
+				label3.className = "svelte-1h4gk0x";
+				add_location(label3, file$1, 188, 2, 3710);
+				header.className = "svelte-1h4gk0x";
+				add_location(header, file$1, 109, 0, 1881);
+				h1.className = "svelte-1h4gk0x";
+				add_location(h1, file$1, 196, 2, 3850);
+				div.className = "container svelte-1h4gk0x";
+				add_location(div, file$1, 195, 0, 3823);
 
 				dispose = [
 					listen(input0, "input", ctx.input0_input_handler),
-					listen(span, "click", ctx.click_handler),
+					listen(button0, "click", ctx.click_handler),
+					listen(button1, "click", ctx.click_handler_1),
+					listen(button2, "click", ctx.click_handler_2),
 					listen(select0, "change", ctx.select0_change_handler),
 					listen(select1, "change", ctx.select1_change_handler),
 					listen(input1, "change", ctx.input1_change_handler),
@@ -23590,12 +23652,15 @@ var app = (function () {
 
 				input0.value = ctx.curDate;
 
-				append(label0, t1);
-				append(label0, span);
-				append(label0, t3);
-				append(header, t4);
+				append(header, t1);
+				append(header, button0);
+				append(header, t3);
+				append(header, button1);
+				append(header, t5);
+				append(header, button2);
+				append(header, t7);
 				append(header, label1);
-				append(label1, t5);
+				append(label1, t8);
 				append(label1, select0);
 				append(select0, option0);
 				append(select0, option1);
@@ -23606,10 +23671,10 @@ var app = (function () {
 
 				select_option(select0, ctx.lookAheadPonc);
 
-				append(label1, t12);
-				append(header, t13);
+				append(label1, t15);
+				append(header, t16);
 				append(header, label2);
-				append(label2, t14);
+				append(label2, t17);
 				append(label2, select1);
 				append(select1, option6);
 				append(select1, option7);
@@ -23620,19 +23685,19 @@ var app = (function () {
 
 				select_option(select1, ctx.lookAheadReg);
 
-				append(label2, t21);
-				append(header, t22);
+				append(label2, t24);
+				append(header, t25);
 				append(header, label3);
-				append(label3, t23);
+				append(label3, t26);
 				append(label3, input1);
 
 				input1.checked = ctx.showData;
 
-				insert(target, t24, anchor);
+				insert(target, t27, anchor);
 				insert(target, div, anchor);
 				append(div, h1);
-				append(h1, t25);
-				append(div, t26);
+				append(h1, t28);
+				append(div, t29);
 				mount_component(cycles, div, null);
 				current = true;
 			},
@@ -23643,8 +23708,8 @@ var app = (function () {
 				if (changed.lookAheadReg) select_option(select1, ctx.lookAheadReg);
 				if (changed.showData) input1.checked = ctx.showData;
 
-				if ((!current || changed.curDateValid) && t25_value !== (t25_value = moment(ctx.curDateValid).format('ddd D MMMM YYYY'))) {
-					set_data(t25, t25_value);
+				if ((!current || changed.curDateValid) && t28_value !== (t28_value = moment(ctx.curDateValid).format('ddd D MMMM YYYY'))) {
+					set_data(t28, t28_value);
 				}
 
 				var cycles_changes = {};
@@ -23670,7 +23735,7 @@ var app = (function () {
 			d: function destroy(detaching) {
 				if (detaching) {
 					detach(header);
-					detach(t24);
+					detach(t27);
 					detach(div);
 				}
 
@@ -23744,11 +23809,27 @@ var app = (function () {
 		}
 
 		function click_handler(e) {
-		        curDate = moment()
-		          .startOf('day')
-		          .format('YYYY-MM-DD'); $$invalidate('curDate', curDate);
-		        e.preventDefault();
-		      }
+		      curDate = moment(curDate)
+		        .startOf('day')
+		        .add(-1, 'day')
+		        .format('YYYY-MM-DD'); $$invalidate('curDate', curDate);
+		      e.preventDefault();
+		    }
+
+		function click_handler_1(e) {
+		      curDate = moment(curDate)
+		        .startOf('day')
+		        .add(1, 'day')
+		        .format('YYYY-MM-DD'); $$invalidate('curDate', curDate);
+		      e.preventDefault();
+		    }
+
+		function click_handler_2(e) {
+		      curDate = moment()
+		        .startOf('day')
+		        .format('YYYY-MM-DD'); $$invalidate('curDate', curDate);
+		      e.preventDefault();
+		    }
 
 		function select0_change_handler() {
 			lookAheadPonc = select_value(this);
@@ -23794,6 +23875,8 @@ var app = (function () {
 			curDateValid,
 			input0_input_handler,
 			click_handler,
+			click_handler_1,
+			click_handler_2,
 			select0_change_handler,
 			select1_change_handler,
 			input1_change_handler,

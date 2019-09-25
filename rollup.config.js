@@ -2,7 +2,7 @@ import svelte from 'rollup-plugin-svelte';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import livereload from 'rollup-plugin-livereload';
-// import buble from 'rollup-plugin-buble';
+// import buble from 'rollup-plugin-buble'; // (remarque après coup : Buble désactivé pourquoi ? On considère que le navigateur est forcément à jour ES6 ?)
 import {
 	terser
 } from 'rollup-plugin-terser';
