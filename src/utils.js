@@ -42,8 +42,6 @@ moment.updateLocale("fr", {
   weekdaysShort: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
 });
 
-
-
 /**
  * concatDates
  * @description
@@ -55,6 +53,7 @@ moment.updateLocale("fr", {
  * @returns {string} Chaîne des deux dates concaténées.
  */
 function concatDates(a, b) {
+  let weekDayFrom = formatDate(a, "ddd");
   a = formatDate(a, "D MMMM YYYY");
   b = formatDate(b, "D MMMM YYYY");
 
@@ -71,14 +70,11 @@ function concatDates(a, b) {
           acc[1].unshift(v[1]);
           return acc;
         },
-        [
-          [],
-          []
-        ]
+        [[], []]
       );
-    }).value();
-
-  if (o[0].length === 0) return o[1].join(" ");
+    })
+    .value();
+  if (o[0].length === 0) return `${weekDayFrom} ${o[1].join(" ")}`;
   return `Du ${o[0].join(" ")} au ${o[1].join(" ")}`;
 }
 
@@ -91,7 +87,4 @@ function formatDate(a, format) {
   return moment.isMoment(a) ? a.format(format) : null;
 }
 
-export {
-  concatDates,
-  formatDate
-}
+export { concatDates, formatDate };

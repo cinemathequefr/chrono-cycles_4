@@ -29,7 +29,7 @@
       .value();
 
     data = [dataPonc, dataReg];
-    console.log("Cycles mounted");
+    // console.log("Cycles mounted");
   });
 </script>
 
@@ -213,8 +213,7 @@
         {/if}
         {#if dataDisplay.zoneA.dateFrom || dataDisplay.zoneA.dateTo}
           <div>
-             {concatDates(dataDisplay.zoneA.dateFrom, dataDisplay.zoneA.dateTo)}
-
+            {concatDates(dataDisplay.zoneA.dateFrom, dataDisplay.zoneA.dateTo)}
           </div>
         {:else if dataDisplay.zoneA.date}
           <div>{formatDate(dataDisplay.zoneA.date, 'D MMM YYYY')}</div>
@@ -225,7 +224,6 @@
         <div class="info">
           {#if dataDisplay.zoneA.progress}{dataDisplay.zoneA.progress}% /{/if}
           J{`${dataDisplay.zoneA.startsIn <= 0 ? '+' : ''}${-dataDisplay.zoneA.startsIn}`}
-
         </div>
         {#if dataDisplay.zoneA.startsIn > 0}
           <div class="soon">À venir</div>
@@ -238,18 +236,18 @@
       {#each dataDisplay.zoneC as cycle, i}
         <div class="cycle">
           <div
-            data-id={cycle.id}
+            data-id={cycle.idCycleProg}
             class="pin icon-pin"
             on:click={e => {
               idPinned = e.target.dataset.id;
+              console.log(idPinned);
             }} />
           <div class="title">{cycle.title}</div>
           <div>{concatDates(cycle.dateFrom, cycle.dateTo)}</div>
           <div class="progress" style="width:{cycle.progressPositive}%;" />
 
           <div class="info">
-             {cycle.progress}% / J{`${cycle.startsIn <= 0 ? '+' : ''}${-cycle.startsIn}`}
-
+            {cycle.progress}% / J{`${cycle.startsIn <= 0 ? '+' : ''}${-cycle.startsIn}`}
           </div>
 
           {#if cycle.startsIn > 0}
@@ -270,6 +268,7 @@
             data-id={cycle.id}
             class="pin icon-pin"
             on:click={e => {
+              console.log(idPinned);
               idPinned = e.target.dataset.id;
             }} />
           <div class="surcycle-title">{cycle.surcycle}</div>
@@ -279,11 +278,11 @@
           {#if cycle.dateFrom || cycle.dateTo}
             <div>{concatDates(cycle.dateFrom, cycle.dateTo)}</div>
           {:else if cycle.date}
-            <div>{formatDate(cycle.date, 'D MMM YYYY')}</div>
+            <div>{concatDates(cycle.date, cycle.date)}</div>
           {/if}
 
           {#if cycle.startsIn >= 0}
-            <div class="info">J-{cycle.startsIn} </div>
+            <div class="info">J-{cycle.startsIn}</div>
             <!-- <div class="soon">J-{cycle.startsIn}</div> -->
           {/if}
         </div>

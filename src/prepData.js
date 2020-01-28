@@ -2,67 +2,92 @@ import _ from "lodash";
 import moment from "moment";
 
 function prepData(data, curDate, idPinned, options) {
-
-  options = _({}).assign({
-    lookAheadPonc: 0,
-    lookAheadReg: 0,
-    surcycles: [
-      "Aujourd'hui le cinéma",
-      "Cinéma bis",
-      "Ciné-club Jean Douchet",
-      "Cinéma d'avant-garde",
-      "Séances spéciales",
-      "Conservatoire des techniques",
-      "Fenêtre sur les collections",
-      "Parlons cinéma"
-    ]
-  }, options).value();
+  options = _({})
+    .assign(
+      {
+        lookAheadPonc: 0,
+        lookAheadReg: 0,
+        surcycles: [
+          "Aujourd'hui le cinéma",
+          "Cinéma bis",
+          "Ciné-club Jean Douchet",
+          "Cinéma d'avant-garde",
+          "Séances spéciales",
+          "Conservatoire des techniques",
+          "Fenêtre sur les collections",
+          "Parlons cinéma",
+          "Archi Vives"
+        ]
+      },
+      options
+    )
+    .value();
 
   // Cycles ponctuels
 
   // On élimine les cycles non publiés ou terminés
   let dataPonc1 = _(data[0])
     .reject(b =>
-      b.dateTo === null ?
-      false :
-      moment(b.dateTo).startOf("day").isBefore(curDate, "days") ||
-      pubDate(moment(b.dateFrom).startOf("day")).isAfter(curDate, "days")
+      b.dateTo === null
+        ? false
+        : moment(b.dateTo)
+            .startOf("day")
+            .isBefore(curDate, "days") ||
+          pubDate(moment(b.dateFrom).startOf("day")).isAfter(curDate, "days")
     )
     // Propriétés calculées (TODO: convertir en amont les dates en objets moment)
-    .map(a => _(a).thru(b => {
-      let dateFrom = moment(b.dateFrom).startOf("day");
-      let dateTo = moment(b.dateTo).startOf("day");
-      let startsIn = moment(b.dateFrom).startOf("day").diff(curDate, "days");
-      let progress = dateTo === null ? 0 : Math.round((dateFrom.diff(curDate, "days") / dateFrom.diff(dateTo, "days")) * 100, 1);
-      let progressPositive = progress > 0 ? progress : 0;
-      return _({}).assign(a, {
-        id: b.idCycle,
-        dateFrom: dateFrom,
-        dateTo: dateTo,
-        startsIn: startsIn,
-        progress: progress,
-        progressPositive: progressPositive
-      }).value();
-    }).value())
+    .map(a =>
+      _(a)
+        .thru(b => {
+          let dateFrom = moment(b.dateFrom).startOf("day");
+          let dateTo = moment(b.dateTo).startOf("day");
+          let startsIn = moment(b.dateFrom)
+            .startOf("day")
+            .diff(curDate, "days");
+          let progress =
+            dateTo === null
+              ? 0
+              : Math.round(
+                  (dateFrom.diff(curDate, "days") /
+                    dateFrom.diff(dateTo, "days")) *
+                    100,
+                  1
+                );
+          let progressPositive = progress > 0 ? progress : 0;
+          return _({})
+            .assign(a, {
+              id: b.idCycleProg,
+              dateFrom: dateFrom,
+              dateTo: dateTo,
+              startsIn: startsIn,
+              progress: progress,
+              progressPositive: progressPositive
+            })
+            .value();
+        })
+        .value()
+    )
     .value();
 
-  console.log(options.lookAheadPonc);
+  // console.log(options.lookAheadPonc);
 
-  let dataPonc2 = _(dataPonc1).filter(b =>
-    moment(b.dateFrom)
-    .startOf("day")
-    .diff(curDate, "days") <= options.lookAheadPonc ||
-    b.id === parseInt(idPinned, 10) // On conserve un cycle épinglé
-  ).value();
+  let dataPonc2 = _(dataPonc1)
+    .filter(
+      b =>
+        moment(b.dateFrom)
+          .startOf("day")
+          .diff(curDate, "days") <= options.lookAheadPonc ||
+        b.id === parseInt(idPinned, 10) // On conserve un cycle épinglé
+    )
+    .value();
 
   // TEST: tri par valeur absolue de la progression
-  dataPonc2 = _(dataPonc2).orderBy(
-    b => Math.abs(b.progress)
-  ).value();
-
+  dataPonc2 = _(dataPonc2)
+    .orderBy(b => Math.abs(b.progress))
+    .value();
 
   // Tri des cycles ponctuels (hypothèse 1)
-  // On intervertit l'ordre des cycles à venir (startsIn >= 0)  
+  // On intervertit l'ordre des cycles à venir (startsIn >= 0)
   // dataPonc2 = _(dataPonc2).partition(b => b.startsIn >= 0)
   //   .map(b => _(b).sortBy(c => c.dateFrom).value())
   //   .thru(b => _.concat(
@@ -70,25 +95,21 @@ function prepData(data, curDate, idPinned, options) {
   //   ))
   //   .value();
 
-
-
-
-
   // Cycles réguliers
 
   // On mémorise dataReg1 : dates de séances publiées et non échues
   let dataReg1 = _(data[1]) // (NB : data[1] sont les données des cycles réguliers)
     .mapValues(b =>
       _(b)
-      .map(
-        c =>
-        _({})
-        .assign(c, {
-          dates: filterDates(curDate, c.dates)
-        })
-        .value() // On remplace le tableau des dates initial par le tableau filtré
-      )
-      .value()
+        .map(
+          c =>
+            _({})
+              .assign(c, {
+                dates: filterDates(curDate, c.dates)
+              })
+              .value() // On remplace le tableau des dates initial par le tableau filtré
+        )
+        .value()
     )
     .value();
 
@@ -96,45 +117,51 @@ function prepData(data, curDate, idPinned, options) {
   let dataReg2 = _(dataReg1)
     .mapValues(b =>
       _(b)
-      .map(c =>
-        _({})
-        .assign(c, {
-          date: _(c.dates)
-            .sort()
-            .head() || null
-        })
+        .map(c =>
+          _({})
+            .assign(c, {
+              date:
+                _(c.dates)
+                  .sort()
+                  .head() || null
+            })
+            .value()
+        )
+        .filter(c => !!c.date)
+        .orderBy(c => c.date)
         .value()
-      )
-      .filter(c => !!c.date)
-      .orderBy(c => c.date)
-      .value()
     )
     .pickBy(b => b.length > 0) // On élimine les propriétés dont la valeur est un tableau vide
     .mapValues((
-        b // Seconde itération mapValues pour retenir le (ou les) cycles à conserver dans le surcycle
-      ) =>
+      b // Seconde itération mapValues pour retenir le (ou les) cycles à conserver dans le surcycle
+    ) =>
       _(b)
-      .reduce((acc, v, i) => {
-
-        if (
-          i === 0 ||
-          (moment(v.date)
-            .startOf("day")
-            .diff(curDate, "days") <= options.lookAheadReg) ||
-          v.id === parseInt(idPinned, 10) // On conserve un cycle épinglé
-        ) {
-          return _(acc).concat(v);
-        } else {
-          return _(acc);
-        }
-      }, [])
-      .value()
+        .reduce((acc, v, i) => {
+          if (
+            i === 0 ||
+            moment(v.date)
+              .startOf("day")
+              .diff(curDate, "days") <= options.lookAheadReg ||
+            v.id === parseInt(idPinned, 10) // On conserve un cycle épinglé
+          ) {
+            return _(acc).concat(v);
+          } else {
+            return _(acc);
+          }
+        }, [])
+        .value()
     )
     .value();
 
   // Rajoute les surcycles vides
   dataReg2 = _({})
-    .assign(_.zipObject(options.surcycles, _.fill(new Array(options.surcycles.length), [])), dataReg2)
+    .assign(
+      _.zipObject(
+        options.surcycles,
+        _.fill(new Array(options.surcycles.length), [])
+      ),
+      dataReg2
+    )
     .value();
 
   // Transforme l'objet en tableau d'objets et nettoye les données inutiles
@@ -144,23 +171,29 @@ function prepData(data, curDate, idPinned, options) {
         return _(v)
           .map(a =>
             _({})
-            .assign(
-              _(a).mapValues((w, m) => (m === "dateFrom" || m === "dateTo") ? moment(w) : w).value(), {
-                surcycle: k,
-                date: moment(a.date).startOf("day"),
-                startsIn: moment(a.date)
-                  .startOf("day")
-                  .diff(curDate, "days")
-              })
-            .omit(["dates"])
-            .value()
+              .assign(
+                _(a)
+                  .mapValues((w, m) =>
+                    m === "dateFrom" || m === "dateTo" ? moment(w) : w
+                  )
+                  .value(),
+                {
+                  surcycle: k,
+                  date: moment(a.date).startOf("day"),
+                  startsIn: moment(a.date)
+                    .startOf("day")
+                    .diff(curDate, "days")
+                }
+              )
+              .omit(["dates"])
+              .value()
           )
-          .value()
+          .value();
       } else {
         return {
           type: "surcycle",
           surcycle: k
-        }
+        };
       }
     })
     .map()
@@ -202,7 +235,6 @@ function prepData(data, curDate, idPinned, options) {
   // };
 }
 
-
 /**
  *
  * @param {string} curDate Date courante
@@ -211,7 +243,11 @@ function prepData(data, curDate, idPinned, options) {
 function filterDates(curDate, dates) {
   return _(dates)
     .filter(d => pubDate(moment(d).startOf("day")).isSameOrBefore(curDate)) // Séances dont la date de publication est passée (= elles sont publiées)
-    .filter(d => moment(d).startOf("day").isSameOrAfter(curDate)) // Séances dont la date de projection n'est pas encore passée
+    .filter(d =>
+      moment(d)
+        .startOf("day")
+        .isSameOrAfter(curDate)
+    ) // Séances dont la date de projection n'est pas encore passée
     .value();
 }
 /**
@@ -231,7 +267,4 @@ function pubDate(date) {
     .startOf("day");
 }
 
-export {
-  pubDate,
-  prepData
-};
+export { pubDate, prepData };
